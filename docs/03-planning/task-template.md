@@ -19,6 +19,9 @@ Define the task fields used inside approved implementation plans. Fill actionabl
 | Execution mode | TODO: inline or subagent, as approved |
 | Scope and exclusions | TODO |
 | Last updated | TODO |
+| Base revision and task commit hash(es) | TODO: actual hashes after commits exist |
+| Commit/staged review and secret-check evidence | TODO |
+| Bookkeeping commit / final report reference | TODO: persist task hashes without self-referential amendments |
 
 ## Dependencies and workspace
 
@@ -36,7 +39,9 @@ TODO: exact files to create/modify/test, responsibility, consumed/produced inter
 - [ ] Run green tests, refactor and run required regression checks.
 - [ ] Review spec compliance and code quality; verify and resolve feedback.
 - [ ] Run fresh final checks; attach acceptance evidence and update affected docs.
-- [ ] Update task status, current-status summary and session handoff.
+- [ ] Stage only reviewed task paths/hunks; inspect staged diff, whitespace and secrets; confirm staged content matches verification.
+- [ ] Create a scoped Conventional Commit; read its actual hash and verify commit contents/status.
+- [ ] Record hash, task status and evidence in the task record; persist post-commit bookkeeping and update current status/handoff using the Git workflow.
 
 Use the installed writing-plans skill's required plan contents. Replace checklist placeholders with exact task steps, commands and expected outcomes rather than leaving an executable plan vague.
 
@@ -63,6 +68,7 @@ TODO: review findings and disposition; final candidate; acceptance evidence; rem
 ## Related documentation
 
 - [Development lifecycle](development-lifecycle.md)
+- [Git and hash bookkeeping](git-workflow.md)
 - [Implementation plans](implementation-plans/README.md)
 - [Task dependencies](task-dependencies.md)
 - [Quality gates](../06-testing/quality-gates.md)

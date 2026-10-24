@@ -12,7 +12,7 @@ Architecture v0.1/P01-P09 is approved under H1; roadmap documentation is authori
 
 ## Observed limitations
 
-- No Git repository exists; Git diff/status validation is unavailable. Compare filesystem inventories instead.
+- Git is now initialized on main with the documentation baseline; the earlier missing-repository limitation is resolved. No remote/hosting-side branch protection is configured. Worktree mode and product H2/merge H3/deployment H4 remain outstanding.
 - Local Python has no PyYAML. Do not install packages. Validate the simple skill frontmatter with standard-library checks for the restricted YAML subset used here.
 - Static checks do not establish live skill discovery or other-agent compatibility.
 
@@ -21,6 +21,8 @@ Architecture v0.1/P01-P09 is approved under H1; roadmap documentation is authori
 The dependency map lists D01-D09 with affected milestones and required resolution evidence. No application failure is reported. TODO: actual named owners and resolved inventory; missing H2 and exact task plans prevent execution, not roadmap completion.
 
 ## Related documentation
+
+- [Git setup and commit policy](../03-planning/git-workflow.md)
 
 - [Prerequisite register D01-D09](../03-planning/task-dependencies.md)
 

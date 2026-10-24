@@ -48,7 +48,7 @@ No calendar critical-path claim is made without estimates. The sequential recove
 | D04 | Encryption/signing custody and online verification-key access | Operator/security owner | M02/M04 execution | Provisioning/rotation/recovery procedure; architecture online-key tradeoff already approved |
 | D05 | Dedicated verification/restore identity and isolation | Operator/DevOps owner | M04 | Validated target inventory, scoped credentials, cleanup boundaries and version fixtures |
 | D06 | Libraries, exact test commands, schema/API types, task paths and attempt budgets | Planning owner | Each relevant H2 | Actionable writing-plans document; no placeholders in executable steps |
-| D07 | Git initialization/integration destination and execution mode | Human operator | Worktrees/implementation integration | Explicit scoped authorization; no Git repository currently exists |
+| D07 | Integration destination and execution mode; Git bootstrap resolved | Human operator | Worktrees/implementation integration | Git initialized on main under explicit setup authorization; detailed plan/mode, remote and merge approval still outstanding |
 | D08 | Alert thresholds, history budget, observer ownership and performance limits | Operator/planning owner | M05 limits, M08/M09 acceptance | Chosen measurable values, then target-specific evidence |
 | D09 | Staging target and exact production artifact/rollback scope | Release owner/human operator | M09 operations and later deployment | Separate staging authorization, readiness dossier and H4 for production |
 

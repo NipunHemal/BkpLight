@@ -1,6 +1,6 @@
 # Session handoff
 
-**Document status:** PLAN-01 roadmap complete; architecture v0.1 approved under H1; implementation unapproved.
+**Document status:** Git setup/workflow integration in progress; H1 held, application execution unapproved.
 
 ## Purpose
 
@@ -8,15 +8,15 @@ Resume from verified authorization and scoped planning output without treating a
 
 ## Current handoff - 2026-10-24
 
-- Workspace: `D:\Project\BkpLight`; documentation only, no Git repository or worktree. No source, package, Docker/CI or runtime artifacts created.
+- Workspace: `D:\Project\BkpLight`; local Git on main, one primary checkout, no linked worktree/remote. Initial commit: 5b84b7b0d5250cf8c488ccaf5d53d27186a1dbe1. Documentation and .gitignore only; no source, package, Docker/CI or runtime artifacts created.
 - User instruction: "ok i aprued" followed by a request for Superpowers writing-plans to organize the approved architecture into a milestone roadmap, priorities, dependencies and deliverables; "Do not implement."
 - Held gates: H0 and H1 for architecture v0.1/P01-P09 and ADR-001. No design exceptions stated; S3 is included. H2/H3/H4 are outstanding.
-- Current task: PLAN-01, lifecycle stage 04, done as documentation; architecture task ARCH-01 done under human approval. No product milestone or executable implementation task is complete.
+- Current task: GIT-SETUP-02 integrates task-wise commits; the latest user request authorizes Git initialization and safe setup commits, forbids application features and requires approval before merging/deploying. PLAN-01 and ARCH-01 are done as documentation/design; no product milestone or executable implementation task is complete.
 - Deliverables: roadmap.md, milestones.md and task-dependencies.md; ten milestones M00-M09, priority/coverage tables, entry/exit checks, dependency graph, D01-D09 prerequisites and proposed future file responsibilities.
 - Future executable plans: none yet. Scope into separate feature/milestone plans using the installed writing-plans header, exact files/interfaces/tests/commands and task-template fields, then request scoped H2 and execution mode. No subagent execution mode was selected here.
-- Evidence: current-status records fresh documentation validation; no application/build/runtime/security/provider behavior is claimed. No package installation, Git mutation, provider call, restore, notification test or deployment occurred.
+- Evidence: current-status records fresh documentation validation; no application/build/runtime/security/provider behavior is claimed. Git initialization, reviewed staging and local setup commits are the only newly authorized mutations. No package installation, provider call, restore, notification test or deployment occurred.
 - Remaining facts: actual engine versions/data scope/resources, provider accounts/test permissions, target identities, exact libraries/tooling, capacity/performance/history/alert limits and named owners. M00 resolves relevant prerequisites without reopening already approved choices.
-- Next action: report the roadmap, then await further direction. Recommended next task is M00 inventory/acceptance synchronization and the scoped M01 plan; implementation remains prohibited by the current request.
+- Next action: finish/verify Git workflow setup and report commits/status. Product follow-up remains M00 inventory/acceptance synchronization and a scoped M01 plan when requested; implementation remains prohibited. Persist each future task commit hash in its record using the bookkeeping rule in git-workflow.md.
 - Failure/recovery state: no product attempt, failed test or partial implementation exists. Preserve prior documents and all five custom skills.
 - TODO: add actual inventory, detailed-plan references and later H2/H3/H4 evidence when received.
 
@@ -25,6 +25,8 @@ Resume from verified authorization and scoped planning output without treating a
 Milestone states are owned by milestones.md; future task states live in their scoped execution plans. Summaries link to these records rather than duplicating mutable task ledgers. Record exact candidate, commands/results, review, failed attempts and next permitted action. Architecture approval does not prove recovery behavior or authorize production.
 
 ## Related documentation
+
+- [Git and task-wise commit workflow](../03-planning/git-workflow.md)
 
 - [Roadmap](../03-planning/roadmap.md)
 - [Milestone register](../03-planning/milestones.md)

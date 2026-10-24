@@ -1,6 +1,6 @@
 # Project context
 
-**Document status:** Documentation-only project; architecture v0.1 approved, roadmap v0.1 prepared.
+**Document status:** Documentation-only project with local Git on main; H1 held, application execution unapproved.
 
 ## Purpose
 
@@ -11,7 +11,7 @@ Provide a small verified context entry point for future agents.
 - Working project label/directory: BkpLight, `D:\Project\BkpLight`.
 - Root was empty when inspected on 2026-10-24.
 - Original authorization covered documentation/skill setup. The user's later request explicitly authorized requirements discovery and a complete PRD using Superpowers brainstorming, with no code implementation; H0 is now granted for that scope.
-- No source, tests, manifests, Docker/CI files or Git repository existed at inspection.
+- No source, tests, manifests, Docker/CI files or Git repository existed at original inspection. Git was subsequently initialized on main at the user's explicit request; initial commit 5b84b7b0d5250cf8c488ccaf5d53d27186a1dbe1 preserves the documentation and ignore rules. No remote or linked worktree was added.
 - The subsequent user request authorized architecture design, alternatives and a human approval request. ARCH-01 produced six architecture documents and ADR-001, subsequently approved under H1. The current task PLAN-01 produces the milestone roadmap with no implementation permission.
 
 ## Authority and uncertainty
@@ -27,6 +27,8 @@ Read current status and inspect files before reusing notes. Distinguish observed
 TODO: named planning/execution owners and future H2/H3/H4 records. These repository notes are separate from global assistant memory; do not modify global memory without user instruction.
 
 ## Related documentation
+
+- [Task-wise Git workflow](../03-planning/git-workflow.md)
 
 - [Accepted ADR and H1 evidence](../04-decisions/ADR-001-single-server-backup-architecture.md)
 - [Milestone roadmap](../03-planning/roadmap.md)

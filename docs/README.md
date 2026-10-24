@@ -13,7 +13,7 @@ Navigate project documentation and distinguish templates from approved or verifi
 - **Approved:** dated explicit approval evidence is recorded.
 - **Verified:** a named check has current evidence; this is not blanket readiness.
 
-The user approved architecture v0.1/P01-P09 and ADR-001 on 2026-10-24, then requested a milestone roadmap using Superpowers writing-plans with no implementation. The roadmap, milestone exit criteria and dependencies are populated under 03-planning. Detailed executable plans and H2/H3/H4 remain outstanding; unknown deployment inventory is not established by design approval.
+The user approved architecture v0.1/P01-P09 and ADR-001 on 2026-10-24, then requested a milestone roadmap using Superpowers writing-plans with no implementation. The roadmap, milestone exit criteria and dependencies are populated under 03-planning. Detailed executable plans and H2/H3/H4 remain outstanding; unknown deployment inventory is not established by design approval. The subsequent Git setup request authorizes repository initialization, safe setup commits and task-wise commit policy, with no application features, merge or deployment.
 
 ## 01 Requirements
 
@@ -34,6 +34,8 @@ The user approved architecture v0.1/P01-P09 and ADR-001 on 2026-10-24, then requ
 - [Infrastructure design](02-architecture/infrastructure-design.md)
 
 ## 03 Planning
+
+- [Git and task-wise commit workflow](03-planning/git-workflow.md)
 
 - [Development lifecycle: all 15 stages and human gates](03-planning/development-lifecycle.md)
 - [Per-task record template](03-planning/task-template.md)

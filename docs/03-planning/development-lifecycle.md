@@ -8,7 +8,7 @@ Define repeatable stages, evidence, human approvals and recovery without choosin
 
 ## Authority and skill ownership
 
-This policy originally accompanied workflow setup. Subsequent user requests granted discovery, architecture drafting and H1 for architecture v0.1/P01-P09; the current request authorizes a milestone roadmap only. Every stage still needs task authorization within its scope. See ADR-001 for approval evidence; this policy itself does not authorize implementation.
+This policy originally accompanied workflow setup. Subsequent requests granted discovery, H1 for architecture v0.1/P01-P09, roadmap documentation and now Git initialization/setup commits with task-wise commit integration. Product H2, merge H3 and deployment H4 remain outstanding. See ADR-001 for design approval and git-workflow.md for the Git setup boundary; this policy itself does not authorize application implementation.
 
 Use official installed `superpowers:*` skills directly. The custom skills are `architecture-review`, `production-readiness`, `deploy-production` and `incident-response`; `project-context` supports every stage. Read the actual applicable skill before use. Disclose unavailable skills and do not claim they executed. This project uses `docs/02-architecture/` for design documents and `docs/03-planning/implementation-plans/` for plans instead of parallel default Superpowers directories. Keep their required document contents and approval semantics.
 
@@ -38,7 +38,7 @@ The numbers describe the overall lifecycle. TDD is nested inside implementation;
 | 04 Roadmap | Planning through existing documents | H1; acceptance scope known | Milestones, dependencies, order, owners, entry/exit criteria and risks mapped to approved scope | `03-planning/`: roadmap, milestones, task dependencies |
 | 05 Task planning | `superpowers:writing-plans` | Approved design and dependency map | Actionable plan, task IDs, exact scoped files/interfaces, test commands and expected results, recovery and execution mode; H2 recorded | `03-planning/implementation-plans/`, task template, `05-progress/` |
 | 06 Worktree setup | `superpowers:using-git-worktrees` | H2; Git state and unrelated changes inspected | Suitable isolated checkout reused/created, paths and branch recorded, relevant baseline checks run; failures disclosed and approved before proceeding | Task record and `08-agent-memory/session-handoff.md` |
-| 07 Implementation | `superpowers:subagent-driven-development` OR `superpowers:executing-plans` | Ready task, approved mode, prerequisites and workspace available | Scoped changes complete through stages 08-11; task review evidence recorded; no completion from implementer assertion alone | Task plan, `05-progress/`, affected design/contracts |
+| 07 Implementation | `superpowers:subagent-driven-development` OR `superpowers:executing-plans` | Ready task, approved mode, prerequisites and workspace available | Scoped changes complete through stages 08-11; reviewed task-wise commit and hash/evidence recorded; no completion from implementer assertion alone | Task plan, `05-progress/`, affected design/contracts |
 | 08 Per-task TDD | `superpowers:test-driven-development` | Behavior/task and acceptance IDs identified | Meaningful failing behavior test observed, minimal implementation passes, refactor and required regression suite pass; evidence saved | Task evidence and `06-testing/` |
 | 09 Debugging | `superpowers:systematic-debugging` when needed | Failure, unexpected behavior or failed baseline | Reproduction, cause, tested correction and regression evidence; or explicit blocked/failed status with next hypothesis | Task failure log, `05-progress/blockers.md` |
 | 10 Review | `superpowers:requesting-code-review` + `superpowers:receiving-code-review` | Reviewable diff and test evidence; design/plan references supplied | Spec compliance and code quality assessed; feedback verified and addressed or explicitly dispositioned; blocking findings closed | Task review record, affected docs, ADRs for significant deviations |
@@ -57,11 +57,13 @@ Paths in the matrix are relative to `docs/`. Stage exit criteria are required wh
 3. Update milestones/dependencies; create a scoped plan and task records using the task template. Obtain H2 for plan and mode.
 4. Establish the worktree/baseline. Choose subagent or inline execution according to H2 and available tools; do not dispatch conflicting work on shared files.
 5. For each ready task: `in_progress` -> red test -> minimal code -> green/refactor -> review -> verification. Debug failures immediately; re-run affected checks after changes. In subagent mode, use the installed skill's task reviewer and final whole-branch review; preserve inline mode's own review requirements.
-6. Close a task only with its tests, review, acceptance evidence and updated docs. Continue within the approved plan without asking for approval between routine tasks.
+6. Review the working diff and exact task-owned staged diff, check secrets/whitespace and commit using Conventional Commits. Record actual commit hash, tests, review, acceptance evidence and task status. Persist post-commit hashes through the bookkeeping rule in git-workflow.md. Continue within the approved plan without asking for approval between routine tasks; never include unrelated staged user changes.
 7. Complete whole-feature verification, H3 integration and candidate verification. A task marked done does not mean integrated, released or production ready.
 8. For a release, satisfy stages 13-14 separately. Maintain the service using stage 15 and feed corrective tasks back into this loop.
 
 ## Task status and session continuity
+
+The [Git workflow](git-workflow.md) defines stable main, feature/fix/hotfix branches, scoped staging, Conventional Commits and worktree use. At milestone completion apply requesting-code-review, verification-before-completion and finishing-a-development-branch to prepare integration; merge only after explicit human approval. No force-push or automatic deployment. Task hashes and verified state are tracked separately from integration/release state.
 
 Use `backlog`, `ready`, `in_progress`, `in_review`, `verified`, `done`, `blocked`, `failed` or `cancelled`.
 
@@ -89,6 +91,7 @@ Before saying complete, verify the current candidate at the required level, clos
 
 - [Agent instructions](../../AGENTS.md)
 - [Task template](task-template.md)
+- [Git and task-wise commits](git-workflow.md)
 - [Quality gates](../06-testing/quality-gates.md)
 - [Production release process](../07-deployment/production-release-process.md)
 - [Session handoff](../08-agent-memory/session-handoff.md)

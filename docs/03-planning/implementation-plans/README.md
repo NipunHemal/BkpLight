@@ -28,9 +28,11 @@ TODO: objective, acceptance IDs, scoped files, dependencies, task steps, meaning
 
 Use applicable installed Superpowers workflows only after the plan and task are authorized.
 
-Use the installed writing-plans structure, supplemented with the task-template fields. Record H1 design and H2 plan/mode approval references, task IDs and status in each plan. Task records in the plan are authoritative; current status and handoffs link to them rather than maintaining conflicting copies. Preserve red/green, review, final verification and failed-attempt evidence. Significant scope changes reopen the affected lifecycle gates; a plan file alone grants no execution authority.
+Use the installed writing-plans structure, supplemented with the task-template fields. Record H1 design and H2 plan/mode approval references, task IDs and status in each plan. Task records in the plan are authoritative; current status and handoffs link to them rather than maintaining conflicting copies. Preserve red/green, review, final verification and failed-attempt evidence. Follow git-workflow.md for scoped Conventional Commits, staged secret review and actual hash/status recording after every approved task. Significant scope changes reopen the affected lifecycle gates; a plan file alone grants no execution authority.
 
 ## Related documentation
+
+- [Task-wise Git workflow](../git-workflow.md)
 
 - [Development lifecycle](../development-lifecycle.md)
 - [Task record template](../task-template.md)

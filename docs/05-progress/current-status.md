@@ -1,6 +1,6 @@
 # Current status
 
-**Document status:** H1 approved; ARCH-01 done; PLAN-01 roadmap documentation complete; no implementation or deployment authorized.
+**Document status:** H1 held; Git bootstrap complete, workflow documentation in review; application execution, merges and deployment unapproved.
 
 ## Purpose
 
@@ -8,7 +8,7 @@ Record current authorization, observed workspace state and evidence, preserving 
 
 ## Current authority - 2026-10-24
 
-The human replied "ok i aprued" to the architecture v0.1/P01-P09 approval question, then requested a milestone roadmap using Superpowers writing-plans and explicitly said "Do not implement." [ADR-001](../04-decisions/ADR-001-single-server-backup-architecture.md) records H1 scope and evidence, including S3. H2/H3/H4 are not granted. Roadmap documentation is authorized; packages, code, Git/worktrees, staging/provider operations and deployment are not.
+The human replied "ok i aprued" to the architecture v0.1/P01-P09 approval question, then requested a milestone roadmap using Superpowers writing-plans and explicitly said "Do not implement." [ADR-001](../04-decisions/ADR-001-single-server-backup-architecture.md) records H1 scope and evidence, including S3. H2/H3/H4 are not granted. The later Git setup request explicitly authorizes initialization, ignore rules, safe initial/setup commits and task-wise workflow documentation. Packages, application code, staging/provider operations, merges and deployment remain unauthorized.
 
 ## Current task and product state
 
@@ -18,7 +18,7 @@ The human replied "ok i aprued" to the architecture v0.1/P01-P09 approval questi
 | PLAN-01 | done (documentation) | Roadmap, milestones and dependency map prepared using installed writing-plans; reviewed against architecture |
 | DISC-01 acceptance synchronization | backlog follow-up in M00 | Original scope/C01-C05 preserved; later H1 policy resolutions recorded; detailed acceptance/inventory still need completion |
 | M00-M09 product milestones | backlog | Authoritative register is milestones.md; no feature has been implemented or tested |
-| Integration / release | not_started | No Git repository or release artifact; no H3/H4 |
+| Integration / release | not_started | Local Git on main, no remote/release artifact; no merge H3 or H4 |
 
 Workspace remains documentation-only. No source, manifests, tests, Docker/CI configuration or executable implementation plans exist. All five custom skills are preserved unchanged. The roadmap is stage 04 planning output; it is not the stage 05 detailed task plan or H2 approval.
 
@@ -28,17 +28,32 @@ Ten milestones cover prerequisite planning, secure foundation, encrypted native 
 
 Self-review checked REQ-001 through REQ-015 and P01-P09 coverage, stage/H1-H4 consistency, stable milestone references, no inferred runtime evidence, and explicit handling of unknown inventory. The roadmap assigns future owners by role without inventing staffing or dates. D01-D09 identify missing facts and their dependent work. Proposed file boundaries are planning suggestions only; exact code/tests/commands belong in later scoped plans.
 
-## Verification
+## Roadmap verification - historical snapshot
 
 Fresh standard-library documentation checks on 2026-10-24 confirmed 45 Markdown files, 335 resolving local links, zero broken/root-escaping links, full root-README reachability, balanced fenced blocks and valid restricted YAML metadata for all five skills. All ten milestone IDs agree across roadmap/register/dependencies; the dependency graph is acyclic and every milestone has entry/exit criteria. Coverage maps REQ-001 through REQ-015 and P01-P09. The initial literal-ID coverage check flagged abbreviated requirement references; those were expanded and the check rerun.
 
 SHA-256 comparison against the pre-roadmap inventory: zero additions/deletions, 24 relevant documentation files updated and 21 unchanged, including all five custom skills. No non-Markdown files or Git repository were created. Self-review is not an independent review. External URLs and Mermaid rendering were not exhaustively tested. No application tests/builds, real provider requests, database connections, restores or deployments were run.
 
+## Git setup - 2026-10-24
+
+| Task | State | Commit / evidence |
+|---|---|---|
+| GIT-SETUP-01: initialize and preserve baseline | done | `5b84b7b0d5250cf8c488ccaf5d53d27186a1dbe1` - `chore(repo): initialize documentation baseline and ignore rules` |
+| GIT-SETUP-02: task-wise workflow integration | in_review | Staged verification and commit pending; no product work |
+
+Observed before initialization: no Git repository, branches or worktrees. Reused existing configured author identity; no global configuration changes. Initialized main with `git init -b main`, preserved all 45 existing Markdown files and added `.gitignore` in the initial commit. There is one primary checkout, no linked worktrees and no remote. Stable-main policy is documented; no hosting-side protections or hooks were installed.
+
+Initial staged checks: 46 files reviewed, 335 local Markdown links resolving, no unreachable pages, zero credential-pattern candidates, all 29 ignore/tracked-path cases passing, and `git diff --cached --check` passing. Secret-pattern review is a bounded static check, not a guarantee against every possible secret format. Git index writes initially failed with sandbox permission denied; scoped escalation for the requested staging/commit succeeded. No user files were discarded or reset.
+
+TODO: record the workflow commit and its final validation evidence after it exists. No application test suite/build is available or claimed. The latest bookkeeping commit hash is reported in the final user response rather than embedded recursively in itself.
+
 ## Next permitted action
 
-Present the saved roadmap. Recommended follow-up: complete M00 non-secret inventory/acceptance prerequisites and prepare a detailed M01 execution plan when requested. Obtain H2 for that exact plan and mode before execution. Do not repeat H1 for unchanged accepted choices or infer execution permission from roadmap completion.
+Finish the authorized Git workflow setup and report verified branch/status/commits. Product follow-up remains M00 non-secret inventory and a scoped M01 plan when requested, followed by H2 before execution. Local task commits do not grant merge or deployment approval.
 
 ## Related documentation
+
+- [Git workflow and commit rules](../03-planning/git-workflow.md)
 
 - [Roadmap](../03-planning/roadmap.md)
 - [Milestone status register](../03-planning/milestones.md)
