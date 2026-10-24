@@ -8,6 +8,8 @@ Guide agents through verified project context, scoped work and evidence-based co
 
 ## Current authorization and approval gates
 
+- Latest environment authorization (2026-10-25): the user approved using WSL and installing required tools. Go 1.26.10 and C build tools are installed and smoke-tested. This supersedes earlier installation restrictions for those tools only. Native Linux test arrangement and M01 fixture disposition remain unresolved; see [installation evidence](docs/06-testing/m01-workspace-preflight.md#wsl-tool-installation---2026-10-25). Preserve existing H2 plan/subagent approval.
+
 - Latest authority (2026-10-25): the human explicitly requested execution of the approved M01 plan using subagent-driven-development, tests/reviews, progress updates and stopping on unresolved blockers. This supersedes earlier documentation-only implementation restrictions for M01; H2 plan/mode is granted. T01 is blocked on the Linux toolchain/fixture entry gates. See the [execution record](docs/03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#execution-authorization-and-blocked-entry---2026-10-25). Do not re-request H2 plan/mode; obtain scoped environment provisioning/M00 fixture disposition before resuming. No merge or deployment is authorized. Earlier authorization entries below retain their historical scope.
 
 - Authorized now (2026-10-24): prepare an isolated M01 worktree and verify dependencies/environment/baseline, per the explicit user request. This preparation supersedes earlier worktree restrictions only; it does not grant implementation/mode, package installation, merge or deployment approval. See [workspace evidence](docs/06-testing/m01-workspace-preflight.md).

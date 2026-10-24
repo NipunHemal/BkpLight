@@ -2,6 +2,12 @@
 
 **Document status:** M01 execution authorized in subagent mode; blocked on entry prerequisites, 2026-10-25.
 
+## Toolchain blocker resolved - 2026-10-25
+
+The user authorized WSL tool installation. Go 1.26.10, GCC 13.3.0 and Make 4.3 are installed and non-root compiler/race-detector smoke checks pass. Native Linux `/tmp` permission/flock/socket checks pass; the managed Windows-backed checkout fails restrictive permission checks (0777 remains after chmod). See [installation evidence](../06-testing/m01-workspace-preflight.md#wsl-tool-installation---2026-10-25). Earlier missing-tool statements below are superseded.
+
+M01/T01 remain blocked pending the native Linux test arrangement and explicit M01 fixture-only disposition; H2 plan/subagent approval is retained. No application source/tests were created or run. Do not reinstall these tools or ask for plan/mode approval again.
+
 ## Latest execution attempt - 2026-10-25
 
 H2 for M01 plan v0.1 and subagent-driven execution is granted by the latest explicit human request; earlier pending-H2/setup-only statements below are superseded. **M01/T01 are blocked before implementation**, with T02-T09 backlog. The isolated workspace remains `C:/Users/USER/.codex/worktrees/m01-secure-foundation/BkpLight`, branch `feature/m01-secure-foundation`, inspected base `563fcf0d71c89fe7692860b55a8bcb150774ae98`.

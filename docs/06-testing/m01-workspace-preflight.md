@@ -1,6 +1,20 @@
 # Milestone 1 workspace preflight
 
-**Document status:** Workspace prepared; implementation environment not ready. Checked 2026-10-24.
+**Document status:** WSL toolchain installed and smoke-tested 2026-10-25; native test arrangement and fixture scope remain unresolved. Earlier preflight evidence is historical.
+
+## WSL tool installation - 2026-10-25
+
+The user authorized using WSL and installing the needed tools. Ubuntu installation completed using the WSL root account because passwordless sudo was unavailable; runtime checks ran as the existing user, UID 1000. No sudo/password policy was changed.
+
+- Installed `build-essential` 12.10ubuntu1 and its dependencies; GCC 13.3.0 and GNU Make 4.3 verified. `ca-certificates` updated to 20260816ubuntu0.24.04.1. No general distribution upgrade was performed.
+- Installed Go 1.26.10 linux/amd64 at `/opt/bkplight/toolchains/go1.26.10`, with new `/usr/local/bin/go` and `/usr/local/bin/gofmt` symlinks. Existing executable paths were checked before creation; no existing Go installation was overwritten.
+- Official download metadata from `https://go.dev/dl/?mode=json&include=all` supplied SHA-256 `ccfe7ae822d2c2f41f4fe7c956199967a4dac22d0ee0d2b2bfdb440aab3b20c5`; downloaded archive matched before extraction.
+- `go version`: `go version go1.26.10 linux/amd64`. `GOTOOLCHAIN=local go env GOOS GOARCH CGO_ENABLED`: linux, amd64, 1.
+- Non-root C compile/execution and a temporary Go concurrency smoke test using `go test -race -count=1 -v` passed. The temporary Go test uses the standard library only and is not an application acceptance test.
+- Native Linux `/tmp` smoke checks passed: directory 0700, file/socket 0600, exclusive flock contention/release and Unix-socket message exchange. Temporary probe files were removed by their scoped temporary-directory contexts.
+- The same permission probe in the Windows-mounted managed checkout returned 0777 for both file and directory after chmod to 0600/0700. This checkout is unsuitable for permission-sensitive test data. Use native Linux test storage or a native execution snapshot; do not weaken assertions or remount the host filesystem silently.
+
+The toolchain blocker is resolved. Remaining execution gates: establish the native Linux test execution arrangement and explicitly record the M01 synthetic-fixture disposition while M00 production inventory stays incomplete. H2 plan/subagent approval persists. No application code, module, project dependency installation, merge or deployment occurred. No application tests are claimed as passing.
 
 ## Purpose
 

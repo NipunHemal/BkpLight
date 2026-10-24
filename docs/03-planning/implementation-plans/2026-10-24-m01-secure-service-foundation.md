@@ -61,7 +61,7 @@ Inspection baseline: clean `main` at `7a5ba9e3020ecc2bd9e3af8687cbdd7183195669`,
 | H1 | Held | Use accepted architecture v0.1; material deviations reopen only affected decisions |
 | M00 | Incomplete | Record M00 exit or explicitly approve an M01-only fixture scope, leaving production engine/provider/resource inventory blocked for later milestones |
 | H2 | Plan/mode granted 2026-10-25 | Subagent execution approved; unresolved environment and M00 gates still apply |
-| Linux tooling | Not demonstrated | Provision an authorized Linux amd64 workspace with Go 1.26.10, C compiler for race tests and writable local filesystem; native Windows tests cannot validate Linux process groups/flock |
+| Linux tooling | Installed and smoke-tested 2026-10-25 | Go 1.26.10/GCC 13.3.0 in WSL; race smoke check passes. Native /tmp permission/flock/socket probes pass; Windows-mounted checkout modes fail. Establish native test arrangement; see preflight evidence |
 | Dependency resolution | Not run | Resolve exact pins and go.sum, verify checksums/licenses and bundled SQLite; do not silently upgrade/rewrite pins if unavailable |
 | Workspace | Managed worktree prepared | feature/m01-secure-foundation at the recorded path; Linux execution semantics still unqualified; no merge/push |
 
@@ -104,7 +104,7 @@ Not delivered: dumps/encryption (M02), remote commits/upload (M03), restore (M04
 
 | Task | Deliverable | Dependencies | Status | Commit / runtime evidence |
 |---|---|---|---|---|
-| T01 | Module, shared safe errors and CLI skeleton | Entry gates | blocked | No implementation; Linux tooling/fixture entry gates unresolved, 2026-10-25 |
+| T01 | Module, shared safe errors and CLI skeleton | Entry gates | blocked | No implementation; tools installed, native test arrangement/fixture disposition unresolved, 2026-10-25 |
 | T02 | Strict typed configuration and offline validation | T01 | backlog | none / not_run |
 | T03 | Bounded secret-file resolver | T02 | backlog | none / not_run |
 | T04 | Safe rotating structured logs | T01 | backlog | none / not_run |
