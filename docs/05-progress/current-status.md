@@ -1,6 +1,14 @@
 # Current status
 
-**Document status:** PLAN-M01 detailed plan prepared for H2 review; H1 held, implementation/merge/deployment unapproved.
+**Document status:** M01 execution authorized in subagent mode; blocked on entry prerequisites, 2026-10-25.
+
+## Latest execution attempt - 2026-10-25
+
+H2 for M01 plan v0.1 and subagent-driven execution is granted by the latest explicit human request; earlier pending-H2/setup-only statements below are superseded. **M01/T01 are blocked before implementation**, with T02-T09 backlog. The isolated workspace remains `C:/Users/USER/.codex/worktrees/m01-secure-foundation/BkpLight`, branch `feature/m01-secure-foundation`, inspected base `563fcf0d71c89fe7692860b55a8bcb150774ae98`.
+
+Fresh Ubuntu checks still find no Go or C compiler on PATH; Windows Go remains 1.24.5, and the Windows-mounted execution filesystem is unqualified. A read-only subagent reviewed prerequisites; no implementer was dispatched. No module, application files or test results were created. The required full pre-task conflict scan remains pending until the entry gate is resolved.
+
+Next: authorize/provide Linux Go 1.26.10 and a C compiler, qualify a native Linux fixture execution location, and explicitly record the M01-only fixture disposition while M00 production inventory stays incomplete. Do not re-ask for plan/mode approval or waive tests. See the [authoritative plan execution record](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#execution-authorization-and-blocked-entry---2026-10-25). No merge, push or deployment authorization.
 
 ## Latest workspace preparation - 2026-10-24
 

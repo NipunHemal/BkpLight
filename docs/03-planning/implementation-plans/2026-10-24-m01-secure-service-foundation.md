@@ -34,7 +34,19 @@ The first review found five additional input cases worth pinning down. Tests bel
 
 ---
 
-**Document status:** Detailed plan v0.1 for H2 review, 2026-10-24. All implementation tasks are backlog; all runtime checks are not_run.
+**Document status:** Plan v0.1 approved for subagent execution on 2026-10-25; M01 blocked at entry, T01 blocked and T02-T09 backlog; runtime checks not_run.
+
+## Execution authorization and blocked entry - 2026-10-25
+
+The human requested: "Use Superpowers subagent-driven-development to execute the approved Milestone 1 plan task by task. Follow the documented architecture, require tests and reviews, update progress, and stop on unresolved blockers."
+
+This grants H2 for M01 plan v0.1 (plan introduced at `2aa208057f4ad6a44bf96260c55710126fd55a31`, unchanged at inspected HEAD `563fcf0d71c89fe7692860b55a8bcb150774ae98`) and selects subagent-driven execution. Earlier pending-H2 statements below are historical; do not ask for plan/mode approval again. It grants no merge/deployment approval and does not establish missing environment evidence.
+
+Fresh checks: existing managed branch `feature/m01-secure-foundation` was clean; Windows Go remains 1.24.5; Ubuntu WSL is Linux x86_64, UID 1000, with go/cc/gcc absent from the checked PATH. `/mnt/c` reports v9fs and `/home` ext2/ext3. No source/module/tests exist. No package installation or application test was attempted.
+
+M01 is **blocked before T01**. Required Linux Go 1.26.10/C compiler and filesystem qualification remain unresolved. Installing system tools in WSL or establishing a native Linux execution location changes state outside this managed worktree and needs scoped authorization. M00 is not complete; record an explicit M01 synthetic-fixture-only disposition before proceeding, retaining production inventory as blockers for later milestones. No need to reopen accepted architecture or request credentials.
+
+A read-only subagent reviewed these entry gates; this is prerequisite review, not implementation/code review. The full task/interface conflict scan is deferred until the environment gate is resolved, before dispatching T01. Stop here as requested; T01 is blocked, T02-T09 remain backlog. Next action: authorize/provide the Linux toolchain and fixture scope, qualify the filesystem, then resume the already-authorized subagent workflow with TDD and per-task reviews.
 
 ## Purpose and authority
 
@@ -48,10 +60,10 @@ Inspection baseline: clean `main` at `7a5ba9e3020ecc2bd9e3af8687cbdd7183195669`,
 |---|---|---|
 | H1 | Held | Use accepted architecture v0.1; material deviations reopen only affected decisions |
 | M00 | Incomplete | Record M00 exit or explicitly approve an M01-only fixture scope, leaving production engine/provider/resource inventory blocked for later milestones |
-| H2 | Not granted | Approve this exact plan revision, package choices, limits, Linux fixture environment and inline/subagent mode |
+| H2 | Plan/mode granted 2026-10-25 | Subagent execution approved; unresolved environment and M00 gates still apply |
 | Linux tooling | Not demonstrated | Provision an authorized Linux amd64 workspace with Go 1.26.10, C compiler for race tests and writable local filesystem; native Windows tests cannot validate Linux process groups/flock |
 | Dependency resolution | Not run | Resolve exact pins and go.sum, verify checksums/licenses and bundled SQLite; do not silently upgrade/rewrite pins if unavailable |
-| Workspace | Documentation branch only | Use using-git-worktrees for the approved implementation base; feature branch `feature/m01-secure-foundation`, with no automatic merge/push |
+| Workspace | Managed worktree prepared | feature/m01-secure-foundation at the recorded path; Linux execution semantics still unqualified; no merge/push |
 
 All M01 tests use synthetic fixtures, temporary directories and helper processes. D01/D03/D04/D05 production DB versions, provider accounts and recovery targets are not needed for these fixtures. This does not mark M00 complete or waive the roadmap dependency. D02 Linux target/tooling, D06 contracts/pins and D07 execution mode are the immediate gates. Do not ask for credentials in chat.
 
@@ -92,7 +104,7 @@ Not delivered: dumps/encryption (M02), remote commits/upload (M03), restore (M04
 
 | Task | Deliverable | Dependencies | Status | Commit / runtime evidence |
 |---|---|---|---|---|
-| T01 | Module, shared safe errors and CLI skeleton | Entry gates | backlog | none / not_run |
+| T01 | Module, shared safe errors and CLI skeleton | Entry gates | blocked | No implementation; Linux tooling/fixture entry gates unresolved, 2026-10-25 |
 | T02 | Strict typed configuration and offline validation | T01 | backlog | none / not_run |
 | T03 | Bounded secret-file resolver | T02 | backlog | none / not_run |
 | T04 | Safe rotating structured logs | T01 | backlog | none / not_run |

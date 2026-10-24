@@ -1,12 +1,14 @@
 # Agent instructions
 
-**Document status:** Active; H1 held; M01 workspace preparation authorized, application implementation, merges and deployment unapproved.
+**Document status:** Active; H1 held; H2 M01 plan/subagent execution granted, blocked on entry prerequisites; merges and deployment unapproved.
 
 ## Purpose
 
 Guide agents through verified project context, scoped work and evidence-based completion. Documentation templates and conversational proposals are not approved requirements or architecture.
 
 ## Current authorization and approval gates
+
+- Latest authority (2026-10-25): the human explicitly requested execution of the approved M01 plan using subagent-driven-development, tests/reviews, progress updates and stopping on unresolved blockers. This supersedes earlier documentation-only implementation restrictions for M01; H2 plan/mode is granted. T01 is blocked on the Linux toolchain/fixture entry gates. See the [execution record](docs/03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#execution-authorization-and-blocked-entry---2026-10-25). Do not re-request H2 plan/mode; obtain scoped environment provisioning/M00 fixture disposition before resuming. No merge or deployment is authorized. Earlier authorization entries below retain their historical scope.
 
 - Authorized now (2026-10-24): prepare an isolated M01 worktree and verify dependencies/environment/baseline, per the explicit user request. This preparation supersedes earlier worktree restrictions only; it does not grant implementation/mode, package installation, merge or deployment approval. See [workspace evidence](docs/06-testing/m01-workspace-preflight.md).
 - Previous planning authorization: use installed Superpowers writing-plans to create the detailed M01 implementation plan with exact paths, dependencies, acceptance tests and verification commands in docs/03-planning/implementation-plans/. Documentation-only task commits follow the approved Git workflow. H2 execution/mode is not granted by this planning request; do not implement, install packages, merge or deploy.

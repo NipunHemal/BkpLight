@@ -8,6 +8,8 @@ Navigate project documentation and distinguish templates from approved or verifi
 
 ## Status and authority
 
+Latest update, 2026-10-25: H2 is granted for the M01 plan and subagent execution. M01 is blocked at entry on Linux tooling/fixture prerequisites; earlier pending-H2 statements below are historical. See [current status](05-progress/current-status.md) and the [plan execution record](03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#execution-authorization-and-blocked-entry---2026-10-25).
+
 - **Template:** structure exists; substantive information remains TODO.
 - **Draft:** content exists but is not approved.
 - **Approved:** dated explicit approval evidence is recorded.
