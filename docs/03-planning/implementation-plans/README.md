@@ -1,6 +1,6 @@
 # Implementation plans
 
-**Document status:** Execution-plan directory policy; roadmap v0.1 exists, no executable plan or H2 approval yet.
+**Document status:** M01 detailed plan v0.1 prepared for review; no H2 execution approval.
 
 ## Purpose
 
@@ -8,7 +8,9 @@ Define the location and evidence for future approved execution plans.
 
 ## Current contents
 
-No task-by-task implementation plans exist. The milestone roadmap, milestone exit checks and dependency map live one level above this directory. They organize the approved architecture but are not executable plans. This README is not an execution grant.
+- [M01 secure service foundation](2026-10-24-m01-secure-service-foundation.md): nine tasks with exact files/contracts, twelve acceptance criteria, test cases and Linux verification commands. Status: H2 review; M00 disposition/tooling and execution mode remain prerequisites. No code has been implemented.
+
+The milestone roadmap, milestone exit checks and dependency map live one level above this directory. This README and the plan are not execution grants.
 
 ## Planned decomposition
 

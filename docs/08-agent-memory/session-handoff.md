@@ -1,6 +1,6 @@
 # Session handoff
 
-**Document status:** Git setup/workflow integration complete; H1 held, application execution unapproved.
+**Document status:** Detailed M01 plan ready for review; H1 held, H2 execution unapproved.
 
 ## Purpose
 
@@ -8,16 +8,17 @@ Resume from verified authorization and scoped planning output without treating a
 
 ## Current handoff - 2026-10-24
 
-- Workspace: `D:\Project\BkpLight`; local Git on main, one primary checkout, no linked worktree/remote. Initial commit: 5b84b7b0d5250cf8c488ccaf5d53d27186a1dbe1. Documentation and .gitignore only; no source, package, Docker/CI or runtime artifacts created.
-- User instruction: "ok i aprued" followed by a request for Superpowers writing-plans to organize the approved architecture into a milestone roadmap, priorities, dependencies and deliverables; "Do not implement."
+- Workspace: `D:\Project\BkpLight`; local Git on documentation branch feature/m01-implementation-plan, based on 7a5ba9e; one primary checkout, no linked worktree/remote; main unchanged by this plan task. Initial commit: 5b84b7b0d5250cf8c488ccaf5d53d27186a1dbe1. Documentation and .gitignore only; no source, package, Docker/CI or runtime artifacts created.
+- Current user instruction: use Superpowers writing-plans for a detailed Milestone 1 implementation plan with exact paths, dependencies, acceptance criteria, test cases and verification commands; a later "continue" requests finishing that planning work. Earlier H1 and Git-workflow authorizations persist; this does not grant H2.
 - Held gates: H0 and H1 for architecture v0.1/P01-P09 and ADR-001. No design exceptions stated; S3 is included. H2/H3/H4 are outstanding.
-- Current task: GIT-SETUP-02 complete at commit 34fea0c1bee0107af8be59c3ae1a6c763de4b376; the latest user request authorizes Git initialization and safe setup commits, forbids application features and requires approval before merging/deploying. PLAN-01 and ARCH-01 are done as documentation/design; no product milestone or executable implementation task is complete.
+- Previous setup task: GIT-SETUP-02 complete at commit 34fea0c1bee0107af8be59c3ae1a6c763de4b376; the earlier Git setup request authorized initialization and safe setup commits, forbids application features and requires approval before merging/deploying. PLAN-01 and ARCH-01 are done as documentation/design; no product milestone or executable implementation task is complete.
 - Git deliverables: .gitignore, git-workflow.md, updated AGENTS/lifecycle/task template, navigation and status. Workflow commit checks passed: 353 links, 29 ignore cases, staged whitespace and secret-pattern review. Final hash-bookkeeping commit is identified in the user report, avoiding a self-referential hash.
 - Earlier roadmap deliverables: roadmap.md, milestones.md and task-dependencies.md; ten milestones M00-M09, priority/coverage tables, entry/exit checks, dependency graph, D01-D09 prerequisites and proposed future file responsibilities.
-- Future executable plans: none yet. Scope into separate feature/milestone plans using the installed writing-plans header, exact files/interfaces/tests/commands and task-template fields, then request scoped H2 and execution mode. No subagent execution mode was selected here.
+- Current planning task: PLAN-M01, in_review; the user requested a detailed implementation plan. The linked M01 plan has T01-T09, M01-AC01 through M01-AC12, exact paths, shared interfaces, fixtures, tests and commands. All implementation tasks remain backlog. No execution mode has been selected.
+- Execution prerequisites: M00 exit or explicit M01 fixture disposition, H2 for the plan/mode, and an authorized non-root Linux workspace with the selected Go toolchain. Observed local Go is 1.24.5 windows/amd64; do not mistake installed Windows Go for Linux runtime verification.
 - Evidence: current-status records fresh documentation validation; no application/build/runtime/security/provider behavior is claimed. Git initialization, reviewed staging and local setup commits are the only newly authorized mutations. No package installation, provider call, restore, notification test or deployment occurred.
 - Remaining facts: actual engine versions/data scope/resources, provider accounts/test permissions, target identities, exact libraries/tooling, capacity/performance/history/alert limits and named owners. M00 resolves relevant prerequisites without reopening already approved choices.
-- Next action: report completed Git setup and final status; no merge, push or deployment is authorized. Product follow-up remains M00 inventory/acceptance synchronization and a scoped M01 plan when requested; implementation remains prohibited. Persist each future task commit hash in its record using the bookkeeping rule in git-workflow.md.
+- Next action: present the detailed M01 plan and obtain its H2/mode and prerequisite disposition before execution. No merge, push or deployment is authorized. Persist future task commit hashes using the Git bookkeeping rule.
 - Failure/recovery state: no product attempt, failed test or partial implementation exists. Preserve prior documents and all five custom skills.
 - TODO: add actual inventory, detailed-plan references and later H2/H3/H4 evidence when received.
 
@@ -26,6 +27,8 @@ Resume from verified authorization and scoped planning output without treating a
 Milestone states are owned by milestones.md; future task states live in their scoped execution plans. Summaries link to these records rather than duplicating mutable task ledgers. Record exact candidate, commands/results, review, failed attempts and next permitted action. Architecture approval does not prove recovery behavior or authorize production.
 
 ## Related documentation
+
+- [Detailed M01 implementation plan](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md)
 
 - [Git and task-wise commit workflow](../03-planning/git-workflow.md)
 

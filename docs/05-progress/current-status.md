@@ -1,6 +1,6 @@
 # Current status
 
-**Document status:** H1 held; Git bootstrap and workflow documentation complete; application execution, merges and deployment unapproved.
+**Document status:** PLAN-M01 detailed plan prepared for H2 review; H1 held, implementation/merge/deployment unapproved.
 
 ## Purpose
 
@@ -8,7 +8,7 @@ Record current authorization, observed workspace state and evidence, preserving 
 
 ## Current authority - 2026-10-24
 
-The human replied "ok i aprued" to the architecture v0.1/P01-P09 approval question, then requested a milestone roadmap using Superpowers writing-plans and explicitly said "Do not implement." [ADR-001](../04-decisions/ADR-001-single-server-backup-architecture.md) records H1 scope and evidence, including S3. H2/H3/H4 are not granted. The later Git setup request explicitly authorizes initialization, ignore rules, safe initial/setup commits and task-wise workflow documentation. Packages, application code, staging/provider operations, merges and deployment remain unauthorized.
+The human replied "ok i aprued" to the architecture v0.1/P01-P09 approval question, then requested a milestone roadmap using Superpowers writing-plans and explicitly said "Do not implement." [ADR-001](../04-decisions/ADR-001-single-server-backup-architecture.md) records H1 scope and evidence, including S3. H2/H3/H4 are not granted. The later Git setup request explicitly authorizes initialization, ignore rules, safe initial/setup commits and task-wise workflow documentation. The newest request authorizes detailed M01 planning with exact files/dependencies/tests/commands. Packages, application code, staging/provider operations, merges and deployment remain unauthorized.
 
 ## Current task and product state
 
@@ -16,11 +16,12 @@ The human replied "ok i aprued" to the architecture v0.1/P01-P09 approval questi
 |---|---|---|
 | ARCH-01 | done | Six architecture documents v0.1/P01-P09 accepted under H1; no runtime claim |
 | PLAN-01 | done (documentation) | Roadmap, milestones and dependency map prepared using installed writing-plans; reviewed against architecture |
+| PLAN-M01 | in_review (documentation) | [Detailed M01 plan](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md); no execution approval |
 | DISC-01 acceptance synchronization | backlog follow-up in M00 | Original scope/C01-C05 preserved; later H1 policy resolutions recorded; detailed acceptance/inventory still need completion |
 | M00-M09 product milestones | backlog | Authoritative register is milestones.md; no feature has been implemented or tested |
-| Integration / release | not_started | Local Git on main, no remote/release artifact; no merge H3 or H4 |
+| Integration / release | not_started | Documentation branch feature/m01-implementation-plan; main unchanged, no remote/release artifact; no merge H3 or H4 |
 
-Workspace remains documentation-only. No source, manifests, tests, Docker/CI configuration or executable implementation plans exist. All five custom skills are preserved unchanged. The roadmap is stage 04 planning output; it is not the stage 05 detailed task plan or H2 approval.
+Workspace remains documentation-only. No source, manifests, tests or Docker/CI configuration exist. A detailed M01 implementation plan now exists for review, with all tasks backlog and no runtime evidence. All five custom skills are preserved unchanged. The roadmap is stage 04 planning output; it is not the stage 05 detailed task plan or H2 approval.
 
 ## Roadmap contents and review
 
@@ -47,9 +48,17 @@ Initial staged checks: 46 files reviewed, 335 local Markdown links resolving, no
 
 Workflow commit validation: 47 indexed files (46 Markdown files plus .gitignore), 353 resolving local links, no unreachable pages, zero credential-pattern candidates, all 29 ignore/tracked-path checks passing, and staged whitespace checks passing. Working tree was clean after the workflow commit. No application test suite/build is available or claimed. TODO: project-specific test/CI tooling and remote protections only under later authorization. The latest bookkeeping commit hash is reported in the final user response rather than embedded recursively in itself.
 
+## Detailed M01 planning - 2026-10-24
+
+Created the requested plan on documentation branch `feature/m01-implementation-plan` from `7a5ba9e3020ecc2bd9e3af8687cbdd7183195669`, preserving main. Nine tasks cover safe CLI/errors, strict YAML, secret resolution, rotating logs, singleton SQLite/migrations, run/outbox state, process supervision, Unix API and daemon acceptance. All twelve acceptance criteria map to tasks; exact file paths, contracts, named tests, red/green commands and task commits are specified.
+
+Observed toolchain: Go 1.24.5 on Windows amd64. Plan proposes Go 1.26.10 and pinned dependencies, with a qualified non-root Linux fixture workspace required before execution. M00 remains incomplete; this plan does not silently waive it. Official dependency/API sources were inspected; no package install, Go module download, Docker operation, production connection or application test occurred. Code snippets are uncompiled planning material. Self-review clarified cancellation idempotency, migration ownership, safe secret reads and foundation-only health.
+
+Documentation validation: 47 Markdown files, 375 resolving local links, zero broken/root-escaping links and all pages reachable from root README. All nine ordered tasks have file/dependency/acceptance/test/commit instructions; twelve acceptance criteria and 86 named tests are present. No undecided placeholder steps or unbalanced fences were found. The initial checker incorrectly required uppercase Commit; the corrected case-insensitive structural check passed. Main remains at the inspected baseline. Staged whitespace and secret review are required before the documentation commit; runtime tests remain not_run. Plan task status is backlog; PLAN-M01 in_review denotes the written plan awaiting H2, not implemented software. Its documentation commit hash is reported after the commit exists.
+
 ## Next permitted action
 
-Report completed Git setup and the final verified branch/status/commits; the hash-recording follow-up is a documentation-only bookkeeping commit. Product follow-up remains M00 non-secret inventory and a scoped M01 plan when requested, followed by H2 before execution. Local task commits do not grant merge or deployment approval.
+Present the M01 plan, its M00/tooling prerequisites and execution-mode choices. Obtain H2 for the exact revision and applicable M00 disposition before any worktree/package/feature execution. Local documentation commits do not grant merge or deployment approval.
 
 ## Related documentation
 
