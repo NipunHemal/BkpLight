@@ -59,6 +59,8 @@ The user approved architecture v0.1/P01-P09 and ADR-001 on 2026-10-24, then requ
 
 ## 06 Testing
 
+- [M01 workspace preflight](06-testing/m01-workspace-preflight.md)
+
 - [Test strategy](06-testing/test-strategy.md)
 - [Quality gates](06-testing/quality-gates.md)
 - [Release checklist](06-testing/release-checklist.md)

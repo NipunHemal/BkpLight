@@ -2,6 +2,12 @@
 
 **Document status:** PLAN-M01 detailed plan prepared for H2 review; H1 held, implementation/merge/deployment unapproved.
 
+## Latest workspace preparation - 2026-10-24
+
+This section supersedes the earlier planning-session workspace and next-action statements below; those remain historical evidence. WT-M01 preparation is complete on `feature/m01-secure-foundation` in `C:/Users/USER/.codex/worktrees/m01-secure-foundation/BkpLight`, based on plan commit `2aa208057f4ad6a44bf96260c55710126fd55a31`. Original checkout and main are unchanged.
+
+The user authorized isolated workspace setup and preflight checks only. No feature implementation or installation occurred. [Preflight evidence](../06-testing/m01-workspace-preflight.md) records available Ubuntu WSL, missing Linux Go/C compiler on PATH, Windows Go version mismatch, published dependency pins and absence of application tests. Documentation-only verification applies; runtime tests are not passing claims. T01-T09 remain backlog. Next: resolve the Linux fixture/toolchain and M00 disposition, then obtain plan/mode execution approval. No merge or deployment is approved.
+
 ## Purpose
 
 Record current authorization, observed workspace state and evidence, preserving previous setup/discovery/design snapshots as history.

@@ -1,6 +1,6 @@
 # Agent instructions
 
-**Document status:** Active; H1 held; detailed M01 planning authorized, application implementation, merges and deployment unapproved.
+**Document status:** Active; H1 held; M01 workspace preparation authorized, application implementation, merges and deployment unapproved.
 
 ## Purpose
 
@@ -8,7 +8,8 @@ Guide agents through verified project context, scoped work and evidence-based co
 
 ## Current authorization and approval gates
 
-- Authorized now: use installed Superpowers writing-plans to create the detailed M01 implementation plan with exact paths, dependencies, acceptance tests and verification commands in docs/03-planning/implementation-plans/. Documentation-only task commits follow the approved Git workflow. H2 execution/mode is not granted by this planning request; do not implement, install packages, merge or deploy.
+- Authorized now (2026-10-24): prepare an isolated M01 worktree and verify dependencies/environment/baseline, per the explicit user request. This preparation supersedes earlier worktree restrictions only; it does not grant implementation/mode, package installation, merge or deployment approval. See [workspace evidence](docs/06-testing/m01-workspace-preflight.md).
+- Previous planning authorization: use installed Superpowers writing-plans to create the detailed M01 implementation plan with exact paths, dependencies, acceptance tests and verification commands in docs/03-planning/implementation-plans/. Documentation-only task commits follow the approved Git workflow. H2 execution/mode is not granted by this planning request; do not implement, install packages, merge or deploy.
 - H1 was granted on 2026-10-24 by the user's "ok i aprued" response to the architecture v0.1/P01-P09 approval question. Use confirmed PRD scope/C01-C05 plus accepted P01-P09, including S3. [ADR-001](docs/04-decisions/ADR-001-single-server-backup-architecture.md) records scope and evidence. Preserve historical discovery wording; do not relabel these choices as earlier clarification answers.
 - Do not implement application code, install packages, change infrastructure or deploy. Git bootstrap is explicitly authorized; this is not H2 for product execution, H3 for a merge or H4 for production. Worktrees apply to later authorized tasks where appropriate; no feature worktree is needed for bootstrap. A milestone roadmap is not an executable task plan.
 - Future authorization applies to its stated scope. Invoking a skill or editing a status file does not approve the next phase.

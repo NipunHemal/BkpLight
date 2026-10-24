@@ -1,0 +1,68 @@
+# Milestone 1 workspace preflight
+
+**Document status:** Workspace prepared; implementation environment not ready. Checked 2026-10-24.
+
+## Purpose
+
+Record isolated workspace setup and baseline evidence before application changes.
+
+## Authority and Git baseline
+
+The user explicitly requested Superpowers using-git-worktrees to prepare an isolated M01 workspace and verify dependencies, environment and baseline tests before changing code. This supersedes the earlier restriction on worktree creation for this preparation only. It does not select an execution mode, approve package installation or authorize feature implementation, merge or deployment.
+
+- Task: WT-M01, preparation complete; implementation prerequisites unresolved.
+- Managed workspace: `C:/Users/USER/.codex/worktrees/m01-secure-foundation/BkpLight`.
+- Branch: `feature/m01-secure-foundation`.
+- Base: `2aa208057f4ad6a44bf96260c55710126fd55a31` (detailed M01 plan).
+- Original checkout: `D:/Project/BkpLight`, branch `feature/m01-implementation-plan`, clean at inspection.
+- Stable main remains `7a5ba9e3020ecc2bd9e3af8687cbdd7183195669`.
+- Native managed-worktree creation and attachment succeeded; no source worktree changes were copied or discarded. No merge, push or remote configuration.
+
+## Environment observations
+
+| Check | Observed result | Implication |
+|---|---|---|
+| Windows `go version` | go1.24.5 windows/amd64 | Does not meet planned Go 1.26.10/Linux baseline |
+| Windows compiler discovery | No cc/gcc/clang found on PATH | No demonstrated local race-test compiler |
+| `wsl --list --verbose` | Ubuntu, WSL 2; initially stopped | Existing Linux environment available |
+| Ubuntu `uname -srm`, OS release | Linux 6.6.87.2-microsoft-standard-WSL2 x86_64; Ubuntu 24.04.3 LTS | Linux amd64 available; not production-target qualification |
+| Ubuntu `id -u` | 1000 | Non-root session |
+| Ubuntu executable discovery | Git 2.43.0; no go/cc/gcc on noninteractive login PATH | Go and C compiler must be supplied before Linux tests |
+| `stat -f -c %T /home /mnt/c` | ext2/ext3; v9fs | Managed checkout is Windows-backed; qualify required permissions/socket/flock semantics or choose a separately approved native Linux execution location |
+
+WSL inspection started the existing distribution; no packages, configuration or application services were installed. No Docker daemon or production endpoint was contacted. Missing PATH entries do not prove software is absent everywhere on disk.
+
+## Dependency verification
+
+Read-only HTTP requests to the official Go module proxy returned 200 for the exact pinned manifests:
+
+| Manifest | Verified metadata |
+|---|---|
+| [YAML v3.0.5](https://proxy.golang.org/go.yaml.in/yaml/v3/@v/v3.0.5.mod) | module go.yaml.in/yaml/v3; go 1.16 |
+| [SQLite v1.61.0](https://proxy.golang.org/modernc.org/sqlite/@v/v1.61.0.mod) | module modernc.org/sqlite; go 1.26.0; modernc.org/libc v1.79.0 |
+| [Cron v3.0.1](https://proxy.golang.org/github.com/robfig/cron/v3/@v/v3.0.1.mod) | module github.com/robfig/cron/v3; go 1.12 |
+
+The [official Go release history](https://go.dev/doc/devel/release) lists Go 1.26.10. These checks establish publication and declared requirements only. No module graph was resolved, package archive installed, checksum/license audit completed or runtime SQLite version verified. Those checks remain pending until an authorized module/toolchain exists. Pins were not changed.
+
+## Baseline and limitations
+
+Repository inspection found documentation, skills and .gitignore only: no go.mod/go.sum, Go source, executable tests, Docker/CI configuration or other package manifest. Therefore `go test ./...`, build, vet, race and integration tests are **not applicable to this baseline**, not passing. Do not create a module or placeholder tests just to manufacture a green preflight.
+
+Documentation links, file inventory, Git whitespace and scoped staged content are checked for this preparation commit; results are recorded in the final task report. The base contained 47 Markdown files. This preparation adds this report and updates only agent instructions, navigation, status and handoff.
+
+Sandbox attempts to list WSL, access module-proxy DNS and resolve managed-worktree Git status initially failed. Authorized elevated read-only retries succeeded. These are tooling restrictions, not application test failures; no security check was bypassed.
+
+## Remaining prerequisites and next step
+
+- TODO: approve/provide Go 1.26.10 and a C compiler in the Linux fixture environment, and qualify filesystem behavior. Do not silently use Windows tests as Linux evidence.
+- TODO: resolve M00 or explicitly authorize the M01-only fixture disposition described by the plan.
+- TODO: approve the exact implementation plan and choose inline or subagent execution before T01. Current instruction approves workspace preparation only.
+- Resolve dependencies/checksums and run the plan's meaningful tests after the appropriate files exist under authorized implementation; record failures and evidence per task.
+- T01-T09 remain backlog; H3 and H4 remain absent. No product acceptance or production readiness is claimed.
+
+## Related documentation
+
+- [M01 plan](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md)
+- [Git workflow](../03-planning/git-workflow.md)
+- [Current status](../05-progress/current-status.md)
+- [Handoff](../08-agent-memory/session-handoff.md)
