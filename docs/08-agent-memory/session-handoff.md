@@ -1,6 +1,6 @@
 # Session handoff
 
-**Document status:** Git setup/workflow integration in progress; H1 held, application execution unapproved.
+**Document status:** Git setup/workflow integration complete; H1 held, application execution unapproved.
 
 ## Purpose
 
@@ -11,12 +11,13 @@ Resume from verified authorization and scoped planning output without treating a
 - Workspace: `D:\Project\BkpLight`; local Git on main, one primary checkout, no linked worktree/remote. Initial commit: 5b84b7b0d5250cf8c488ccaf5d53d27186a1dbe1. Documentation and .gitignore only; no source, package, Docker/CI or runtime artifacts created.
 - User instruction: "ok i aprued" followed by a request for Superpowers writing-plans to organize the approved architecture into a milestone roadmap, priorities, dependencies and deliverables; "Do not implement."
 - Held gates: H0 and H1 for architecture v0.1/P01-P09 and ADR-001. No design exceptions stated; S3 is included. H2/H3/H4 are outstanding.
-- Current task: GIT-SETUP-02 integrates task-wise commits; the latest user request authorizes Git initialization and safe setup commits, forbids application features and requires approval before merging/deploying. PLAN-01 and ARCH-01 are done as documentation/design; no product milestone or executable implementation task is complete.
-- Deliverables: roadmap.md, milestones.md and task-dependencies.md; ten milestones M00-M09, priority/coverage tables, entry/exit checks, dependency graph, D01-D09 prerequisites and proposed future file responsibilities.
+- Current task: GIT-SETUP-02 complete at commit 34fea0c1bee0107af8be59c3ae1a6c763de4b376; the latest user request authorizes Git initialization and safe setup commits, forbids application features and requires approval before merging/deploying. PLAN-01 and ARCH-01 are done as documentation/design; no product milestone or executable implementation task is complete.
+- Git deliverables: .gitignore, git-workflow.md, updated AGENTS/lifecycle/task template, navigation and status. Workflow commit checks passed: 353 links, 29 ignore cases, staged whitespace and secret-pattern review. Final hash-bookkeeping commit is identified in the user report, avoiding a self-referential hash.
+- Earlier roadmap deliverables: roadmap.md, milestones.md and task-dependencies.md; ten milestones M00-M09, priority/coverage tables, entry/exit checks, dependency graph, D01-D09 prerequisites and proposed future file responsibilities.
 - Future executable plans: none yet. Scope into separate feature/milestone plans using the installed writing-plans header, exact files/interfaces/tests/commands and task-template fields, then request scoped H2 and execution mode. No subagent execution mode was selected here.
 - Evidence: current-status records fresh documentation validation; no application/build/runtime/security/provider behavior is claimed. Git initialization, reviewed staging and local setup commits are the only newly authorized mutations. No package installation, provider call, restore, notification test or deployment occurred.
 - Remaining facts: actual engine versions/data scope/resources, provider accounts/test permissions, target identities, exact libraries/tooling, capacity/performance/history/alert limits and named owners. M00 resolves relevant prerequisites without reopening already approved choices.
-- Next action: finish/verify Git workflow setup and report commits/status. Product follow-up remains M00 inventory/acceptance synchronization and a scoped M01 plan when requested; implementation remains prohibited. Persist each future task commit hash in its record using the bookkeeping rule in git-workflow.md.
+- Next action: report completed Git setup and final status; no merge, push or deployment is authorized. Product follow-up remains M00 inventory/acceptance synchronization and a scoped M01 plan when requested; implementation remains prohibited. Persist each future task commit hash in its record using the bookkeeping rule in git-workflow.md.
 - Failure/recovery state: no product attempt, failed test or partial implementation exists. Preserve prior documents and all five custom skills.
 - TODO: add actual inventory, detailed-plan references and later H2/H3/H4 evidence when received.
 

@@ -12,7 +12,7 @@ Provide a small verified context entry point for future agents.
 - Root was empty when inspected on 2026-10-24.
 - Original authorization covered documentation/skill setup. The user's later request explicitly authorized requirements discovery and a complete PRD using Superpowers brainstorming, with no code implementation; H0 is now granted for that scope.
 - No source, tests, manifests, Docker/CI files or Git repository existed at original inspection. Git was subsequently initialized on main at the user's explicit request; initial commit 5b84b7b0d5250cf8c488ccaf5d53d27186a1dbe1 preserves the documentation and ignore rules. No remote or linked worktree was added.
-- The subsequent user request authorized architecture design, alternatives and a human approval request. ARCH-01 produced six architecture documents and ADR-001, subsequently approved under H1. The current task PLAN-01 produces the milestone roadmap with no implementation permission.
+- The subsequent user request authorized architecture design, alternatives and a human approval request. ARCH-01 produced six architecture documents and ADR-001, subsequently approved under H1. PLAN-01 produced the roadmap; the later GIT-SETUP tasks initialized Git and documented task-wise commits without application implementation permission.
 
 ## Authority and uncertainty
 

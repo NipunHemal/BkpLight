@@ -1,6 +1,6 @@
 # Current status
 
-**Document status:** H1 held; Git bootstrap complete, workflow documentation in review; application execution, merges and deployment unapproved.
+**Document status:** H1 held; Git bootstrap and workflow documentation complete; application execution, merges and deployment unapproved.
 
 ## Purpose
 
@@ -39,17 +39,17 @@ SHA-256 comparison against the pre-roadmap inventory: zero additions/deletions, 
 | Task | State | Commit / evidence |
 |---|---|---|
 | GIT-SETUP-01: initialize and preserve baseline | done | `5b84b7b0d5250cf8c488ccaf5d53d27186a1dbe1` - `chore(repo): initialize documentation baseline and ignore rules` |
-| GIT-SETUP-02: task-wise workflow integration | in_review | Staged verification and commit pending; no product work |
+| GIT-SETUP-02: task-wise workflow integration | done | `34fea0c1bee0107af8be59c3ae1a6c763de4b376` - `docs(workflow): define task-wise commit lifecycle` |
 
 Observed before initialization: no Git repository, branches or worktrees. Reused existing configured author identity; no global configuration changes. Initialized main with `git init -b main`, preserved all 45 existing Markdown files and added `.gitignore` in the initial commit. There is one primary checkout, no linked worktrees and no remote. Stable-main policy is documented; no hosting-side protections or hooks were installed.
 
 Initial staged checks: 46 files reviewed, 335 local Markdown links resolving, no unreachable pages, zero credential-pattern candidates, all 29 ignore/tracked-path cases passing, and `git diff --cached --check` passing. Secret-pattern review is a bounded static check, not a guarantee against every possible secret format. Git index writes initially failed with sandbox permission denied; scoped escalation for the requested staging/commit succeeded. No user files were discarded or reset.
 
-TODO: record the workflow commit and its final validation evidence after it exists. No application test suite/build is available or claimed. The latest bookkeeping commit hash is reported in the final user response rather than embedded recursively in itself.
+Workflow commit validation: 47 indexed files (46 Markdown files plus .gitignore), 353 resolving local links, no unreachable pages, zero credential-pattern candidates, all 29 ignore/tracked-path checks passing, and staged whitespace checks passing. Working tree was clean after the workflow commit. No application test suite/build is available or claimed. TODO: project-specific test/CI tooling and remote protections only under later authorization. The latest bookkeeping commit hash is reported in the final user response rather than embedded recursively in itself.
 
 ## Next permitted action
 
-Finish the authorized Git workflow setup and report verified branch/status/commits. Product follow-up remains M00 non-secret inventory and a scoped M01 plan when requested, followed by H2 before execution. Local task commits do not grant merge or deployment approval.
+Report completed Git setup and the final verified branch/status/commits; the hash-recording follow-up is a documentation-only bookkeeping commit. Product follow-up remains M00 non-secret inventory and a scoped M01 plan when requested, followed by H2 before execution. Local task commits do not grant merge or deployment approval.
 
 ## Related documentation
 
