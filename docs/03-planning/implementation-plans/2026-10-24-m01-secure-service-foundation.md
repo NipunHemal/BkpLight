@@ -110,8 +110,8 @@ Not delivered: dumps/encryption (M02), remote commits/upload (M03), restore (M04
 |---|---|---|---|---|
 | T01 | Module, shared safe errors and CLI skeleton | Entry gates | done | `99248f5e1a5089a4e405ccd63235a02f9dd900ba`; native WSL RED missing APIs, GREEN seven tests, `go test ./...`, vet/build; independent task review approved 2026-10-25 |
 | T02 | Strict typed configuration and offline validation | T01 | done | `18a2e4c250f9095a8502c6ea9d6c09a5a378e304`, fix `6975a64b73cf3fb4eb2de0388deaa9f90cdc4487`; native WSL full tests/fuzz 38,741/vet/build/CLI/module verify; independent review issue fixed and scoped re-review PASS |
-| T03 | Bounded secret-file resolver | T02 | ready | T02 reviewed after fix; implementation not_run |
-| T04 | Safe rotating structured logs | T01 | backlog | none / not_run |
+| T03 | Bounded secret-file resolver | T02 | done | `26500dbbbd6003759af31b3cb3dd29d20989a7a2`; non-root native WSL focused tests, race, full suite, vet/build; independent review approved |
+| T04 | Safe rotating structured logs | T01 | ready | T01 reviewed; implementation not_run |
 | T05 | Singleton SQLite ownership and migrations | T01 | backlog | none / not_run |
 | T06 | Config revisions, idempotent run state and outbox | T02, T05 | backlog | none / not_run |
 | T07 | Linux native-process supervisor | T01 | backlog | none / not_run |
@@ -362,7 +362,7 @@ func TestConfigRejectsOverlappingDirectories(t *testing.T) {
 
 **Dependencies:** T02. **Files:** T03 row plus Modify `internal/cli/run.go`, `internal/cli/run_test.go` for `--check-secrets`. **Acceptance:** M01-AC02. **Consumes:** config.SecretRefs/safeerr. **Produces:** secrets.Resolver.
 
-- [ ] Create test-owned secret roots with `t.TempDir`, regular files chmod 0600 and fake content; never use `/run/secrets` or real credentials in tests. Write:
+- [x] Create test-owned secret roots with `t.TempDir`, regular files chmod 0600 and fake content; never use `/run/secrets` or real credentials in tests. Write:
 
 ```go
 // package secrets; imports context, os, path/filepath, testing
@@ -375,10 +375,10 @@ func TestReadRejectsOversizeAndEscape(t *testing.T) {
 }
 ```
 
-- [ ] Run `go test ./internal/secrets -run TestReadRejectsOversizeAndEscape -count=1 -v`; observe RED.
-- [ ] Implement `New` with `os.OpenRoot` for each absolute configured trusted root, closing earlier roots on failure. Read resolves the lexically containing root, derives relative path and uses Root.OpenFile with `os.O_RDONLY | syscall.O_NONBLOCK`, then checks the opened descriptor's Stat before reading; reject nonregular files, file size above limit and reads exceeding limit+1. Follow only symlinks confined by os.Root; this supports in-root secret projections but rejects escape. Check context before/after IO; no filesystem read occurs in config.Decode. Return only safe code/field on open/read errors. Do not trim bytes or log contents; caller owns format handling and minimizes lifetime.
-- [ ] Add `TestReadMissingUnreadableNonRegular`, `TestReadSymlinkEscape`, `TestCancelledRead`, `TestSecretsNotIncludedInRevision`, `TestCheckSecretsOnlyEnabledGraph`. Run unreadable mode test as non-root; a root-only pass is insufficient. FIFO/directory tests must return immediately without reading because the open is nonblocking and descriptor type is checked; test symlink swaps remain confined by os.Root.
-- [ ] Add this exact-limit test (bytes import). Do not trim or newline-normalize secret data in the resolver.
+- [x] Run `go test ./internal/secrets -run TestReadRejectsOversizeAndEscape -count=1 -v`; observe RED.
+- [x] Implement `New` with `os.OpenRoot` for each absolute configured trusted root, closing earlier roots on failure. Read resolves the lexically containing root, derives relative path and uses Root.OpenFile with `os.O_RDONLY | syscall.O_NONBLOCK`, then checks the opened descriptor's Stat before reading; reject nonregular files, file size above limit and reads exceeding limit+1. Follow only symlinks confined by os.Root; this supports in-root secret projections but rejects escape. Check context before/after IO; no filesystem read occurs in config.Decode. Return only safe code/field on open/read errors. Do not trim bytes or log contents; caller owns format handling and minimizes lifetime.
+- [x] Add `TestReadMissingUnreadableNonRegular`, `TestReadSymlinkEscape`, `TestCancelledRead`, `TestSecretsNotIncludedInRevision`, `TestCheckSecretsOnlyEnabledGraph`. Run unreadable mode test as non-root; a root-only pass is insufficient. FIFO/directory tests must return immediately without reading because the open is nonblocking and descriptor type is checked; test symlink swaps remain confined by os.Root.
+- [x] Add this exact-limit test (bytes import). Do not trim or newline-normalize secret data in the resolver.
 
 ```go
 func TestReadExactLimitPreservesBytes(t *testing.T) {
@@ -389,8 +389,8 @@ func TestReadExactLimitPreservesBytes(t *testing.T) {
     if err!=nil || !bytes.Equal(got,want) {t.Fatal("exact-limit secret changed")}
 }
 ```
-- [ ] Run `go test ./internal/secrets ./internal/config ./internal/cli -count=1`, `go test -race ./internal/secrets -count=1`; expect PASS with no secret in test logs/CLI errors.
-- [ ] Commit `feat(secrets): constrain credential file resolution`; record hash/evidence. Native-tool credential format and runtime token rotation remain later adapter responsibilities.
+- [x] Run `go test ./internal/secrets ./internal/config ./internal/cli -count=1`, `go test -race ./internal/secrets -count=1`; expect PASS with no secret in test logs/CLI errors.
+- [x] Commit `feat(secrets): constrain credential file resolution`; record hash/evidence. Native-tool credential format and runtime token rotation remain later adapter responsibilities.
 
 ## T04 - Safe structured logs and rotation
 
