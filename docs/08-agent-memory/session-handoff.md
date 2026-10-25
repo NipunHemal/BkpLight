@@ -2,6 +2,10 @@
 
 **Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
 
+## T05 reviewed SQLite and T06 handoff - 2026-10-25
+
+T05 is complete in `16bcdfc000ecf118dca34fec875e1a47a121dfdd` and `e8a49c1a8444c76018790bb4c5b89054995832d0`, with independent review and fix re-review. Native WSL verifies SQLite 3.54.1, singleton locking, private state files, checked migration/backup/rollback, process-crash recovery and lease-draining Close. [Plan status](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order): T01-T05 done, T06 in progress, T07-T09 backlog. T06 must close rows/connections and commit or roll back transactions before awaiting `Store.Close`; an outstanding lease deliberately keeps flock ownership and blocks Close. This evidence uses synthetic local fixtures; M00 production inventory remains incomplete and merge/deployment remain unapproved.
+
 ## T04 reviewed safe logs and T05 handoff - 2026-10-25
 
 T04 is complete in `1b04bc0dc69fae27f8a79797bcad182d03914a48` and `14e653a17d03baabfa88165960bc9a4abf22e2d0`. A scoped re-review closed two Important findings: atomic collision-safe rename after process interruption, and checking the acquired log directory identity before chmod. Native WSL RED/GREEN regressions, 14 focused tests, race/full suite, vet/build are recorded in the ignored SDD report. [Plan status](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order): T01-T04 done, T05 in progress, T06-T09 backlog. The next implementer owns T05 state/SQLite only; verify pinned driver and runtime version, private lock lifecycle, migration backup and crash recovery. M00 production inventory remains incomplete; no merge/deployment authorization.

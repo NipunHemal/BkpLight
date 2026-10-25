@@ -112,8 +112,8 @@ Not delivered: dumps/encryption (M02), remote commits/upload (M03), restore (M04
 | T02 | Strict typed configuration and offline validation | T01 | done | `18a2e4c250f9095a8502c6ea9d6c09a5a378e304`, fix `6975a64b73cf3fb4eb2de0388deaa9f90cdc4487`; native WSL full tests/fuzz 38,741/vet/build/CLI/module verify; independent review issue fixed and scoped re-review PASS |
 | T03 | Bounded secret-file resolver | T02 | done | `26500dbbbd6003759af31b3cb3dd29d20989a7a2`; non-root native WSL focused tests, race, full suite, vet/build; independent review approved |
 | T04 | Safe rotating structured logs | T01 | done | `1b04bc0dc69fae27f8a79797bcad182d03914a48`, fix `14e653a17d03baabfa88165960bc9a4abf22e2d0`; native WSL RED/GREEN regressions, 14 focused tests, race/full suite, vet/build; two review findings fixed and scoped re-review PASS |
-| T05 | Singleton SQLite ownership and migrations | T01 | in_progress | T01 and T04 reviewed; implementer dispatch pending from `14e653a17d03baabfa88165960bc9a4abf22e2d0` |
-| T06 | Config revisions, idempotent run state and outbox | T02, T05 | backlog | none / not_run |
+| T05 | Singleton SQLite ownership and migrations | T01 | done | `16bcdfc000ecf118dca34fec875e1a47a121dfdd`, fix `e8a49c1a8444c76018790bb4c5b89054995832d0`; native WSL 21 state tests, race/full suite, vet/build/module verify, SQLite 3.54.1; two review findings fixed and scoped re-review PASS |
+| T06 | Config revisions, idempotent run state and outbox | T02, T05 | in_progress | T02/T05 reviewed; implementer dispatch pending from `e8a49c1a8444c76018790bb4c5b89054995832d0` |
 | T07 | Linux native-process supervisor | T01 | backlog | none / not_run |
 | T08 | Local HTTP contracts and CLI client | T02, T06 | backlog | none / not_run |
 | T09 | Daemon composition, health/shutdown and acceptance harness | T03, T04, T05, T06, T07, T08 | backlog | none / not_run |
@@ -440,7 +440,7 @@ Close flushes/closes once; Healthy reports write/rotation errors
 
 **Dependencies:** T01; exact driver pin resolution. **Files:** T05 row. **Acceptance:** M01-AC04/11. **Consumes:** safeerr. **Produces:** state.Store/Open/Close and schema version 1. T06 defines business methods, not a second database owner.
 
-- [ ] Add the driver import/requirement and resulting go.sum; keep SQLite and its transitive libc consistent. Write Linux lock test first (package state).
+- [x] Add the driver import/requirement and resulting go.sum; keep SQLite and its transitive libc consistent. Write Linux lock test first (package state).
 
 ```go
 func TestSecondOwnerRejected(t *testing.T) {
@@ -452,10 +452,10 @@ func TestSecondOwnerRejected(t *testing.T) {
 }
 ```
 
-- [ ] Run `go test ./internal/state -run TestSecondOwnerRejected -count=1 -v`; observe RED. Once a no-op skeleton compiles, also demonstrate a failing singleton behavior assertion, not only a missing symbol.
-- [ ] Acquire `state.lock` with nonblocking Linux `flock(LOCK_EX|LOCK_NB)` before SQLite open; keep its descriptor until after DB.Close. Never unlink the lock inode during ownership/release. State directory is local, private 0700, file 0600; reject symlink/state-path reuse that escapes configured ownership. Do not copy SQLite's own file descriptor or perform unrelated opens/closes on the DB file while it is live.
-- [ ] Open SQLite using a URL-escaped path and driver pragmas on each connection, cap pool to one connection/one idle. Set/verify `foreign_keys=ON`, `journal_mode=WAL`, `synchronous=FULL`, `busy_timeout=1000`; verify runtime SQLite version. Filesystem/SQL errors map to Unavailable. Use operation contexts so contention is bounded. M01 has no remote/network FS support.
-- [ ] Embed `migrations/*.sql`. Before a nonempty existing supported database receives a migration, create a consistent SQLite backup using `VACUUM INTO` on the single owner connection to a unique, private state backup path; fail if backup fails and never copy a live .db without WAL. Version 0 is allowed only for an empty database. Refuse any user tables without the migration ledger or schema version newer than supported. Transactionally apply migration SQL, ledger checksum and `PRAGMA user_version=1`; checksum mismatch fails closed. Test future upgrade path using a test-only second migration, never by editing a shipped migration.
+- [x] Run `go test ./internal/state -run TestSecondOwnerRejected -count=1 -v`; observe RED. Once a no-op skeleton compiles, also demonstrate a failing singleton behavior assertion, not only a missing symbol.
+- [x] Acquire `state.lock` with nonblocking Linux `flock(LOCK_EX|LOCK_NB)` before SQLite open; keep its descriptor until after DB.Close. Never unlink the lock inode during ownership/release. State directory is local, private 0700, file 0600; reject symlink/state-path reuse that escapes configured ownership. Do not copy SQLite's own file descriptor or perform unrelated opens/closes on the DB file while it is live. Fix `e8a49c1` retains ownership until all SQL leases drain and anchors each directory component.
+- [x] Open SQLite using a URL-escaped path and driver pragmas on each connection, cap pool to one connection/one idle. Set/verify `foreign_keys=ON`, `journal_mode=WAL`, `synchronous=FULL`, `busy_timeout=1000`; verify runtime SQLite version. Filesystem/SQL errors map to Unavailable. Use operation contexts so contention is bounded. M01 has no remote/network FS support.
+- [x] Embed `migrations/*.sql`. Before a nonempty existing supported database receives a migration, create a consistent SQLite backup using `VACUUM INTO` on the single owner connection to a unique, private state backup path; fail if backup fails and never copy a live .db without WAL. Version 0 is allowed only for an empty database. Refuse any user tables without the migration ledger or schema version newer than supported. Transactionally apply migration SQL, ledger checksum and `PRAGMA user_version=1`; checksum mismatch fails closed. Test future upgrade path using a test-only second migration, never by editing a shipped migration.
 
 **Exact schema for `001_foundation.sql`:** use UTC microseconds in integer timestamps; JSON is normalized/redacted, not secret storage. Application computes SHA-256 checksums over embedded SQL bytes.
 
@@ -509,9 +509,9 @@ INSERT INTO health_probe VALUES(1,0);
 
 This is an additive M01 subset: delivery states expand in M07; source/destination revision tables, schedules/artifacts/copies/restores/claims arrive with their owning feature. Config snapshots and job revisions retain source/destination bindings now. Do not expose a successful backup based only on these foundation rows.
 
-- [ ] Add `TestPragmasAndRuntimeVersion`, `TestNewerSchemaRejected`, `TestUnknownExistingDatabaseRejected`, `TestMigrationChecksumMismatch`, `TestMigrationRollback`, `TestMigrationBackupFailure`, `TestBusyDeadline`, `TestLockReleasedAfterCrash`. Crash test starts a helper test process, waits for an explicit ready pipe, SIGKILLs/reaps it and proves a new owner acquires the same directory. Test backup restores the captured file to a separate temp directory and verifies old schema/data; never overwrites the active test DB.
-- [ ] Run `go test ./internal/state -count=1`, `go test -race ./internal/state -count=1`, `go mod verify`; expect PASS, runtime SQLite 3.54.1 (or stop if the selected pin does not match its documented version), bounded busy failure, no partial schema and preserved backup. This qualification may invalidate the pin; do not report success without running it.
-- [ ] Commit `feat(state): own SQLite lifecycle and checked migrations`; record hash, runtime version and evidence.
+- [x] Add `TestPragmasAndRuntimeVersion`, `TestNewerSchemaRejected`, `TestUnknownExistingDatabaseRejected`, `TestMigrationChecksumMismatch`, `TestMigrationRollback`, `TestMigrationBackupFailure`, `TestBusyDeadline`, `TestLockReleasedAfterCrash`. Crash test starts a helper test process, waits for an explicit ready pipe, SIGKILLs/reaps it and proves a new owner acquires the same directory. Test backup restores the captured file to a separate temp directory and verifies old schema/data; never overwrites the active test DB.
+- [x] Run `go test ./internal/state -count=1`, `go test -race ./internal/state -count=1`, `go mod verify`; expect PASS, runtime SQLite 3.54.1 (or stop if the selected pin does not match its documented version), bounded busy failure, no partial schema and preserved backup. This qualification may invalidate the pin; do not report success without running it.
+- [x] Commit `feat(state): own SQLite lifecycle and checked migrations`; record hash, runtime version and evidence. Reviewed fix `e8a49c1` closes directory and lease ownership gaps.
 
 ## T06 - Revisions, idempotent runs and transactional outbox
 

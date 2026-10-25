@@ -2,6 +2,10 @@
 
 **Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
 
+## T05 reviewed SQLite foundation - 2026-10-25
+
+T05 singleton state ownership, SQLite 3.54.1 and checked schema migrations are complete in `16bcdfc000ecf118dca34fec875e1a47a121dfdd` plus fix `e8a49c1a8444c76018790bb4c5b89054995832d0`. Native WSL 21 state tests, race/full suite, vet/build/module verification passed per the task report. Independent review found ancestor path substitution and early flock release while SQL leases remain; regression tests and scoped re-review closed both. The [plan task register](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order) marks T01-T05 done and T06 in progress. M00 production inventory remains incomplete; no merge/deployment approval.
+
 ## T04 reviewed safe logs - 2026-10-25
 
 T04 bounded structured logs and rotation are complete in `1b04bc0dc69fae27f8a79797bcad182d03914a48` plus fix `14e653a17d03baabfa88165960bc9a4abf22e2d0`. Native WSL behavioral RED/GREEN regressions, 14 focused tests, race/full suite, vet and build passed per the task report. Independent review found process-crash rotation and acquired-directory identity issues; both were fixed and scoped re-review passed. The [plan task register](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order) marks T01-T04 done and T05 in progress. M00 production inventory remains incomplete; no merge or deployment approval.
