@@ -108,8 +108,8 @@ Not delivered: dumps/encryption (M02), remote commits/upload (M03), restore (M04
 
 | Task | Deliverable | Dependencies | Status | Commit / runtime evidence |
 |---|---|---|---|---|
-| T01 | Module, shared safe errors and CLI skeleton | Entry gates | ready | M01 synthetic fixture and native WSL test arrangement confirmed 2026-10-25; implementation not_run |
-| T02 | Strict typed configuration and offline validation | T01 | backlog | none / not_run |
+| T01 | Module, shared safe errors and CLI skeleton | Entry gates | done | `99248f5e1a5089a4e405ccd63235a02f9dd900ba`; native WSL RED missing APIs, GREEN seven tests, `go test ./...`, vet/build; independent task review approved 2026-10-25 |
+| T02 | Strict typed configuration and offline validation | T01 | ready | T01 reviewed; implementation not_run |
 | T03 | Bounded secret-file resolver | T02 | backlog | none / not_run |
 | T04 | Safe rotating structured logs | T01 | backlog | none / not_run |
 | T05 | Singleton SQLite ownership and migrations | T01 | backlog | none / not_run |
@@ -257,7 +257,7 @@ Normalize map ordering through encoding/json, default application and daily/week
 
 **Dependencies:** all entry gates. **Files:** the T01 file-map row. **Acceptance:** M01-AC06/12 foundation. **Consumes:** standard library only. **Produces:** safeerr and cli signatures above.
 
-- [ ] Create go.mod with module `bkplight.local/bkplight`, `go 1.26.0`, `toolchain go1.26.10`; add no external requirements until the task that imports them. Create the test below before its implementation. T01 creates no go.sum until dependencies require it.
+- [x] Create go.mod with module `bkplight.local/bkplight`, `go 1.26.0`, `toolchain go1.26.10`; add no external requirements until the task that imports them. Create the test below before its implementation. T01 creates no go.sum until dependencies require it.
 
 ```go
 // internal/safeerr/error_test.go, package safeerr
@@ -269,8 +269,8 @@ func TestPublicHidesUnknownError(t *testing.T) {
 }
 ```
 
-- [ ] Run `GOTOOLCHAIN=local go test ./internal/safeerr -run TestPublicHidesUnknownError -count=1 -v`; expect the missing API failure, not an absent compiler/dependency failure.
-- [ ] Implement `Error.Error` as code plus validated field identifier, and `Public` using `errors.As` only for safeerr.Error; all others become Internal. Accept only enumerated codes and field-path characters. CLI uses flag.FlagSet with ContinueOnError and SetOutput(io.Discard), explicit subcommand switches, no raw parser errors; `version` prints `bkplight dev`, unknown command exits 2. `main` delegates exit status without printing extra errors.
+- [x] Run `GOTOOLCHAIN=local go test ./internal/safeerr -run TestPublicHidesUnknownError -count=1 -v`; expect the missing API failure, not an absent compiler/dependency failure.
+- [x] Implement `Error.Error` as code plus validated field identifier, and `Public` using `errors.As` only for safeerr.Error; all others become Internal. Accept only enumerated codes and field-path characters. CLI uses flag.FlagSet with ContinueOnError and SetOutput(io.Discard), explicit subcommand switches, no raw parser errors; `version` prints `bkplight dev`, unknown command exits 2. `main` delegates exit status without printing extra errors.
 
 ```go
 func Public(err error) Error {
@@ -284,9 +284,9 @@ func Public(err error) Error {
 
 `valid(Code,string) bool` is a private T01 helper in error.go: switch over the eight listed constants, require Field empty or ASCII letters/digits/underscore/dot/brackets up to 128 characters. `Error.Error()` uses this helper and falls back to `internal`. Do not include the original error's message.
 
-- [ ] Add `TestErrorRejectsUnknownCodeAndField`, `TestVersionCommand` and `TestUnknownCommandDoesNotEchoArgs` (pass a synthetic credential-like argument; assert only invalid-command code, exit 2).
-- [ ] Run `go test ./internal/safeerr ./internal/cli -count=1`, `go vet ./internal/safeerr ./internal/cli`, `go build ./cmd/bkplight`; expect exit 0 and no module/source mutation beyond listed files. Build output is ignored by .gitignore.
-- [ ] Review/stage only T01 files; commit `chore(core): establish safe command and error contracts`. Record actual hash and red/green evidence before T02.
+- [x] Add `TestErrorRejectsUnknownCodeAndField`, `TestVersionCommand` and `TestUnknownCommandDoesNotEchoArgs` (pass a synthetic credential-like argument; assert only invalid-command code, exit 2).
+- [x] Run `go test ./internal/safeerr ./internal/cli -count=1`, `go vet ./internal/safeerr ./internal/cli`, `go build ./cmd/bkplight`; expect exit 0 and no module/source mutation beyond listed files. Build output is ignored by .gitignore.
+- [x] Review/stage only T01 files; commit `chore(core): establish safe command and error contracts`. Record actual hash and red/green evidence before T02.
 
 ## T02 - Strict configuration and offline validation
 

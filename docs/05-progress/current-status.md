@@ -2,6 +2,10 @@
 
 **Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
 
+## T01 reviewed foundation - 2026-10-25
+
+T01 safe errors and CLI skeleton is complete in commit `99248f5e1a5089a4e405ccd63235a02f9dd900ba`. The implementer recorded TDD RED failures for absent APIs, then seven GREEN native WSL tests, full `go test ./...`, focused `go vet` and `go build`; source bytes matched the managed checkout. Independent spec and quality review approved the six-file diff with no findings. The [plan task register](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order) is authoritative; T02 is ready, T03-T09 remain backlog. M00 production inventory remains incomplete; no merge/deployment approval.
+
 ## M01 execution resumed - 2026-10-25
 
 The user's "ok can you use wsl" resolved the M01-only synthetic fixture disposition. The native WSL test snapshot `/home/hemal/.bkplight-m01-fixture-eba7f1c` is private and initially matched all 49 source files; Go 1.26.10 and GCC 13.3.0 were verified again as non-root. The official Superpowers skill is available. M00 production inventory remains incomplete. T01 is ready; no application test result is claimed yet. The [plan](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#native-wsl-fixture-disposition---2026-10-25) and ignored SDD ledger record the entry and preflight scan. Earlier blocked-entry sections below are historical.
