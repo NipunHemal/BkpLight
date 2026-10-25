@@ -109,8 +109,8 @@ Not delivered: dumps/encryption (M02), remote commits/upload (M03), restore (M04
 | Task | Deliverable | Dependencies | Status | Commit / runtime evidence |
 |---|---|---|---|---|
 | T01 | Module, shared safe errors and CLI skeleton | Entry gates | done | `99248f5e1a5089a4e405ccd63235a02f9dd900ba`; native WSL RED missing APIs, GREEN seven tests, `go test ./...`, vet/build; independent task review approved 2026-10-25 |
-| T02 | Strict typed configuration and offline validation | T01 | ready | T01 reviewed; implementation not_run |
-| T03 | Bounded secret-file resolver | T02 | backlog | none / not_run |
+| T02 | Strict typed configuration and offline validation | T01 | done | `18a2e4c250f9095a8502c6ea9d6c09a5a378e304`, fix `6975a64b73cf3fb4eb2de0388deaa9f90cdc4487`; native WSL full tests/fuzz 38,741/vet/build/CLI/module verify; independent review issue fixed and scoped re-review PASS |
+| T03 | Bounded secret-file resolver | T02 | ready | T02 reviewed after fix; implementation not_run |
 | T04 | Safe rotating structured logs | T01 | backlog | none / not_run |
 | T05 | Singleton SQLite ownership and migrations | T01 | backlog | none / not_run |
 | T06 | Config revisions, idempotent run state and outbox | T02, T05 | backlog | none / not_run |
@@ -292,7 +292,7 @@ func Public(err error) Error {
 
 **Dependencies:** T01. **Files:** T02 row. **Acceptance:** M01-AC01/02/03. **Consumes:** safeerr. **Produces:** config structs/Decode/Revision/SecretRefs, `bkplight config validate --config PATH`.
 
-- [ ] Add pinned YAML and cron requirements in go.mod and resolve only after H2; commit resulting go.sum. Create valid.yaml and examples/bkplight.yaml with the same synthetic maintenance fixture:
+- [x] Add pinned YAML and cron requirements in go.mod and resolve only after H2; commit resulting go.sum. Create valid.yaml and examples/bkplight.yaml with the same synthetic maintenance fixture:
 
 ```yaml
 version: 1
@@ -312,7 +312,7 @@ notifications: {channels: {}}
 logging: {directory: /var/log/bkplight}
 ```
 
-- [ ] Write the test before decoding code (imports bytes/os/testing; package config).
+- [x] Write the test before decoding code (imports bytes/os/testing; package config).
 
 ```go
 func TestDecodeRejectsDuplicateAndUnknown(t *testing.T) {
@@ -325,8 +325,8 @@ func TestDecodeRejectsDuplicateAndUnknown(t *testing.T) {
 }
 ```
 
-- [ ] Run `go test ./internal/config -run TestDecodeRejectsDuplicateAndUnknown -count=1 -v`; require RED because invalid YAML is accepted or API absent, not module-fetch failure.
-- [ ] Implement two-pass decoding as the exact algorithm below. `inspectNode` is a private recursive helper in decode.go taking `(*yaml.Node,depth,*count)` and returning safeerr.Invalid on duplicate mapping keys, aliases/anchors/merge keys, excessive nodes/depth or non-scalar keys.
+- [x] Run `go test ./internal/config -run TestDecodeRejectsDuplicateAndUnknown -count=1 -v`; require RED because invalid YAML is accepted or API absent, not module-fetch failure.
+- [x] Implement two-pass decoding as the exact algorithm below. `inspectNode` is a private recursive helper in decode.go taking `(*yaml.Node,depth,*count)` and returning safeerr.Invalid on duplicate mapping keys, aliases/anchors/merge keys, excessive nodes/depth or non-scalar keys.
 
 ```text
 read at most 1 MiB + 1; reject excess before parsing
@@ -338,9 +338,9 @@ normalize Schedule via cron.NewParser(Minute|Hour|Dom|Month|Dow)
 return the typed Config; never read secret files, resolve DNS or open SQLite
 ```
 
-- [ ] Implement full table validation, including enabled/disabled graph traversal, no inline credentials, no URL userinfo, no source/target alias collision by configured host/port/engine, and no duplicate provider locations. Preserve nested unknown-key rejection. Runtime DNS equivalence and live source identity are M04 preflights, not proven by this syntax check.
-- [ ] Add table-driven tests: `TestConfigBounds` (1 MiB+1, depth33, node20001, alias/merge/multidoc); `TestConfigReferences` (dangling source/destination/channel/target, duplicate selected destination); `TestConfigPolicies` (zero required dest, negative retention, neither count nor days, invalid timezone/cron, Mongo consistency omitted); `TestRevisionCanonical` (map order/daily-vs-cron equivalence, one meaningful change changes hash); `TestSecretRefsActiveOnly` (disabled jobs/channels excluded, shared dependency included once); `TestOfflineValidationDoesNotReadSecrets` (nonexistent absolute path with valid syntax accepted offline).
-- [ ] Add the Review Focus tests below. Extend inspectNode to reject explicit null for enabled flags; validate independent state/staging/log directories and reject overlaps with secret roots before any filesystem IO. Reject duplicate selected databases, but preserve legitimate names/case/Unicode without inventing identifier-only DB name restrictions.
+- [x] Implement full table validation, including enabled/disabled graph traversal, no inline credentials, no URL userinfo, no source/target alias collision by configured host/port/engine, and no duplicate provider locations. Preserve nested unknown-key rejection. Runtime DNS equivalence and live source identity are M04 preflights, not proven by this syntax check.
+- [x] Add table-driven tests: `TestConfigBounds` (1 MiB+1, depth33, node20001, alias/merge/multidoc); `TestConfigReferences` (dangling source/destination/channel/target, duplicate selected destination); `TestConfigPolicies` (zero required dest, negative retention, neither count nor days, invalid timezone/cron, Mongo consistency omitted); `TestRevisionCanonical` (map order/daily-vs-cron equivalence, one meaningful change changes hash); `TestSecretRefsActiveOnly` (disabled jobs/channels excluded, shared dependency included once); `TestOfflineValidationDoesNotReadSecrets` (nonexistent absolute path with valid syntax accepted offline).
+- [x] Add the Review Focus tests below. Extend inspectNode to reject explicit null for enabled flags; validate independent state/staging/log directories and reject overlaps with secret roots before any filesystem IO. Reject duplicate selected databases, but preserve legitimate names/case/Unicode without inventing identifier-only DB name restrictions.
 
 ```go
 func TestConfigRejectsNullEnabled(t *testing.T) {
@@ -354,9 +354,9 @@ func TestConfigRejectsOverlappingDirectories(t *testing.T) {
     if _,err=Decode(bytes.NewReader(raw));err==nil {t.Fatal("overlapping directories accepted")}
 }
 ```
-- [ ] Add `FuzzDecode` with seeds valid.yaml, empty, duplicate version and alias; assert no panic and bounded input admission. CLI validation outputs only normalized config hash and `valid`, or safe code/field; `--check-secrets` is added in T03.
-- [ ] Run `go test ./internal/config ./internal/cli -count=1`, `go test ./internal/config -run '^$' -fuzz FuzzDecode -fuzztime 10s`, `go run ./cmd/bkplight config validate --config examples/bkplight.yaml`; expect PASS and no secret/state/log file creation.
-- [ ] Review exact staged config examples for synthetic content; commit `feat(config): validate versioned backup configuration` with task ID and evidence.
+- [x] Add `FuzzDecode` with seeds valid.yaml, empty, duplicate version and alias; assert no panic and bounded input admission. CLI validation outputs only normalized config hash and `valid`, or safe code/field; `--check-secrets` is added in T03.
+- [x] Run `go test ./internal/config ./internal/cli -count=1`, `go test ./internal/config -run '^$' -fuzz FuzzDecode -fuzztime 10s`, `go run ./cmd/bkplight config validate --config examples/bkplight.yaml`; expect PASS and no secret/state/log file creation.
+- [x] Review exact staged config examples for synthetic content; commit `feat(config): validate versioned backup configuration` with task ID and evidence.
 
 ## T03 - Root-contained bounded secret reads
 

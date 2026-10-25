@@ -2,6 +2,10 @@
 
 **Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
 
+## T02 reviewed configuration - 2026-10-25
+
+T02 strict YAML/offline configuration validation is complete in `18a2e4c250f9095a8502c6ea9d6c09a5a378e304` plus reviewed regression fix `6975a64b73cf3fb4eb2de0388deaa9f90cdc4487`. Native WSL full tests, 38,741 fuzz executions, vet, build, example CLI validation and `go mod verify` passed per task evidence. Independent review found numeric HTTPS port aliases evaded duplicate destination detection; red/green regression and scoped re-review confirmed the fix with no remaining findings. The [plan task register](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order) marks T01-T02 done and T03 ready. M00 production inventory remains incomplete; no merge/deployment approval.
+
 ## T01 reviewed foundation - 2026-10-25
 
 T01 safe errors and CLI skeleton is complete in commit `99248f5e1a5089a4e405ccd63235a02f9dd900ba`. The implementer recorded TDD RED failures for absent APIs, then seven GREEN native WSL tests, full `go test ./...`, focused `go vet` and `go build`; source bytes matched the managed checkout. Independent spec and quality review approved the six-file diff with no findings. The [plan task register](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order) is authoritative; T02 is ready, T03-T09 remain backlog. M00 production inventory remains incomplete; no merge/deployment approval.
