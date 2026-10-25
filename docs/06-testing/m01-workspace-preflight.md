@@ -2,6 +2,14 @@
 
 **Document status:** WSL toolchain installed and smoke-tested 2026-10-25; native test arrangement and fixture scope remain unresolved. Earlier preflight evidence is historical.
 
+## WSL execution choice confirmed - 2026-10-25
+
+The user said "ok can you use wsl". Use Ubuntu WSL for M01 commands, retaining the managed worktree as the source/Git authority. Fresh non-root checks report Go 1.26.10 linux/amd64, CGO_ENABLED=1 and GCC 13.3.0. An initial probe used the wrong conventional Go path; the documented `/usr/local/bin/go` resolves correctly to `/opt/bkplight/toolchains/go1.26.10/bin/go`. No reinstall is needed.
+
+Use native `/tmp` for Go temporary files and permission-sensitive fixture data (`TMPDIR=/tmp`, `GOTOOLCHAIN=local`). Source may be read from the mounted managed checkout; tests requiring restrictive modes for source-adjacent files must use a native snapshot with recorded source hashes. Do not weaken checks to accept mounted Windows permissions. Fresh self-cleaning probes passed 0700 directory/0600 file and socket modes, flock contention/release and Unix-socket exchange as UID 1000. These are environment checks, not product tests.
+
+Execution remains stopped before T01: the explicit M01-only synthetic-fixture disposition is still outstanding, and the previously installed Superpowers skill path is now absent. Search of the Codex plugin cache and user skill directories found no Superpowers skill files; the current skill catalog also omits them. Restore the requested official skill before claiming that workflow runs. Existing H2 plan/subagent authorization remains valid. No application source or dependencies were added.
+
 ## WSL tool installation - 2026-10-25
 
 The user authorized using WSL and installing the needed tools. Ubuntu installation completed using the WSL root account because passwordless sudo was unavailable; runtime checks ran as the existing user, UID 1000. No sudo/password policy was changed.
