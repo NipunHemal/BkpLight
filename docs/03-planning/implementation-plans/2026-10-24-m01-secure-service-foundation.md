@@ -114,8 +114,8 @@ Not delivered: dumps/encryption (M02), remote commits/upload (M03), restore (M04
 | T04 | Safe rotating structured logs | T01 | done | `1b04bc0dc69fae27f8a79797bcad182d03914a48`, fix `14e653a17d03baabfa88165960bc9a4abf22e2d0`; native WSL RED/GREEN regressions, 14 focused tests, race/full suite, vet/build; two review findings fixed and scoped re-review PASS |
 | T05 | Singleton SQLite ownership and migrations | T01 | done | `16bcdfc000ecf118dca34fec875e1a47a121dfdd`, fix `e8a49c1a8444c76018790bb4c5b89054995832d0`; native WSL 21 state tests, race/full suite, vet/build/module verify, SQLite 3.54.1; two review findings fixed and scoped re-review PASS |
 | T06 | Config revisions, idempotent run state and outbox | T02, T05 | done | `072cd38ab2d725f4229b0fb02c033cbfa50f9206`; native WSL 25 new tests, state race/full suite, vet/build; independent spec and quality review approved, no findings |
-| T07 | Linux native-process supervisor | T01 | in_progress | T01 reviewed; implementer dispatch pending from `072cd38ab2d725f4229b0fb02c033cbfa50f9206` |
-| T08 | Local HTTP contracts and CLI client | T02, T06 | backlog | none / not_run |
+| T07 | Linux native-process supervisor | T01 | done | `3f6e7cd8084de6121778c2e33afe9119c574af6f`; native WSL focused/race/full suite, vet/build and PID/ESRCH evidence; independent spec and quality review approved, no findings |
+| T08 | Local HTTP contracts and CLI client | T02, T06 | in_progress | T02/T06 reviewed; implementer dispatch pending from `3f6e7cd8084de6121778c2e33afe9119c574af6f` |
 | T09 | Daemon composition, health/shutdown and acceptance harness | T03, T04, T05, T06, T07, T08 | backlog | none / not_run |
 
 Execute serially T01-T09 unless H2 selects parallel mode and assigns disjoint file ownership. T01 owns shared errors, T02 owns config, T05/T06 own schema/store; consumers cannot silently change them. The record above is authoritative for task status. After each real commit record its hash/evidence in the task record using the Git bookkeeping policy. Integration/release state: not_started. Implementation owner/reviewer: unassigned until H2; no invented staffing.
@@ -609,7 +609,7 @@ func TestReplaySurvivesDisabledJob(t *testing.T) {
 
 **Dependencies:** T01. **Files:** T07 row. **Acceptance:** M01-AC08/11. **Consumes:** context, io.Writer, safeerr. **Produces:** Runner.Run. This is an internal API only, never a configurable arbitrary command endpoint.
 
-- [ ] Use Go test-helper processes: the test binary reexecutes itself with `-test.run=TestProcessHelper -- <mode>`. `TestProcessHelper` returns normally unless `BKP_TEST_HELPER=1`; modes `exit7`, `stderr-flood`, `sleep`, `spawn-child`, `ignore-term` have fixed test-owned behaviors. Parent passes its own `os.Executable()` in AllowedExecutables. Implement fixture modes inside runner_linux_test.go, not a shell script.
+- [x] Use Go test-helper processes: the test binary reexecutes itself with `-test.run=TestProcessHelper -- <mode>`. `TestProcessHelper` returns normally unless `BKP_TEST_HELPER=1`; modes `exit7`, `stderr-flood`, `sleep`, `spawn-child`, `ignore-term` have fixed test-owned behaviors. Parent passes its own `os.Executable()` in AllowedExecutables. Implement fixture modes inside runner_linux_test.go, not a shell script.
 
 ```go
 func TestCancelReapsProcess(t *testing.T) {
@@ -625,8 +625,8 @@ func TestCancelReapsProcess(t *testing.T) {
 }
 ```
 
-- [ ] Run `go test ./internal/process -run TestCancelReapsProcess -count=1 -v`; observe RED.
-- [ ] Implement exact executable allowlist after canonical absolute-path validation; no PATH lookup or `sh -c`. `exec.Command` receives an argument array, explicit sanitized environment (no inherited provider secrets), `SysProcAttr.Setpgid=true`, validated working directory and stdout writer. Stderr is drained continuously while counting bytes; retain at most StderrLimit internally, never log or return raw bytes. Reject invalid/negative limit/grace and missing stdout writer.
+- [x] Run `go test ./internal/process -run TestCancelReapsProcess -count=1 -v`; observe RED.
+- [x] Implement exact executable allowlist after canonical absolute-path validation; no PATH lookup or `sh -c`. `exec.Command` receives an argument array, explicit sanitized environment (no inherited provider secrets), `SysProcAttr.Setpgid=true`, validated working directory and stdout writer. Stderr is drained continuously while counting bytes; retain at most StderrLimit internally, never log or return raw bytes. Reject invalid/negative limit/grace and missing stdout writer.
 
 ```text
 start child, launch bounded stream-copy goroutines, wait on exit or context
@@ -640,9 +640,11 @@ never signal process group 0 or another job; retain started PID ownership
 
 Use a documented 1-second pipe-drain deadline after termination; broken pipe/stdout writer errors are failure, not exit-0 success. All goroutines have joined before Run returns. Helper descendants must not survive; intentionally daemonized children that leave the process group are unsupported and prohibited by the internal executable contract. Later native tools are explicitly qualified against that contract.
 
-- [ ] Add `TestNonzeroExit`, `TestStderrFloodIsBounded`, `TestStdoutFailureCancelsProducer`, `TestArgumentIsNotShellEvaluated`, `TestUnapprovedExecutableRejected`, `TestSpawnedChildDoesNotSurvive`, `TestNoInheritedSecrets`. For descendant test obtain PID through a dedicated helper channel, then assert ESRCH after teardown with bounded polling; no sleep-only success assertion.
-- [ ] Run `go test ./internal/process -count=1`, `go test -race ./internal/process -count=1`; expect PASS, no orphan PIDs, bounded stderr memory and cancellation under test deadline.
-- [ ] Commit `feat(process): supervise bounded native process groups`; record hash/evidence. No native PostgreSQL/MongoDB command is invoked in M01.
+**Execution ruling (2026-10-25):** Internal `Spec.Stdout` writers must return from `Write` or honor cancellation; a permanently blocking caller writer cannot provide a bounded return and joined goroutines under this interface. Grace is capped at 5 seconds and retained stderr at 1 MiB. T09 must supply a bounded writer. These are internal safety limits, not production tool qualification.
+
+- [x] Add `TestNonzeroExit`, `TestStderrFloodIsBounded`, `TestStdoutFailureCancelsProducer`, `TestArgumentIsNotShellEvaluated`, `TestUnapprovedExecutableRejected`, `TestSpawnedChildDoesNotSurvive`, `TestNoInheritedSecrets`. For descendant test obtain PID through a dedicated helper channel, then assert ESRCH after teardown with bounded polling; no sleep-only success assertion.
+- [x] Run `go test ./internal/process -count=1`, `go test -race ./internal/process -count=1`; expect PASS, no orphan PIDs, bounded stderr memory and cancellation under test deadline.
+- [x] Commit `feat(process): supervise bounded native process groups`; record hash/evidence. No native PostgreSQL/MongoDB command is invoked in M01.
 
 ## T08 - Unix API and CLI client
 

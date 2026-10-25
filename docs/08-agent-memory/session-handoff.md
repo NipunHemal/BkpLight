@@ -2,6 +2,10 @@
 
 **Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
 
+## T07 reviewed process supervisor and T08 handoff - 2026-10-25
+
+T07 is complete in `3f6e7cd8084de6121778c2e33afe9119c574af6f` with clean independent review. Native WSL process helpers verified cancellation, output failure, stderr bounds, explicit environment, process-group signalling and PID cleanup; race/full suite, vet/build passed per the ignored task report. [Plan status](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order): T01-T07 done, T08 in progress, T09 backlog. T08 owns local Unix control API/CLI only; it must preserve the no-public-TCP and no-actual-backup boundary. Later process callers must supply a returning/cancellation-aware stdout writer. M00 production inventory remains incomplete; no merge/deployment approval.
+
 ## T06 reviewed state primitives and T07 handoff - 2026-10-25
 
 T06 is complete in `072cd38ab2d725f4229b0fb02c033cbfa50f9206` with clean independent review. Native WSL tests, required race subset, full Go suite, vet and build passed per the ignored task report. [Plan status](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order): T01-T06 done, T07 in progress, T08-T09 backlog. Internal `operation.transition` preserves audit sequence without claiming real backup execution; synthetic routing tests do not send webhooks. T07 owns only the native-process supervisor and its tests, with no shell, arbitrary executable or actual database dump. M00 production inventory remains incomplete; no merge/deployment approval.

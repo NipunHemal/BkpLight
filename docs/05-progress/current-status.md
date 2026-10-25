@@ -2,6 +2,10 @@
 
 **Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
 
+## T07 reviewed process supervisor - 2026-10-25
+
+T07 bounded Linux process supervision is complete in `3f6e7cd8084de6121778c2e33afe9119c574af6f`. Native WSL focused/race/full tests, vet/build and direct/descendant PID cleanup passed per the task report; independent spec and quality review approved with no findings. Internal callers must supply a returning or cancellation-aware stdout writer and trusted in-group executables. The [plan task register](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order) marks T01-T07 done and T08 in progress. M00 production inventory remains incomplete; no merge/deployment approval.
+
 ## T06 reviewed transactional history - 2026-10-25
 
 T06 config revisions, idempotent run state, audit events and transactional outbox primitives are complete in `072cd38ab2d725f4229b0fb02c033cbfa50f9206`. Native WSL focused tests, required race subset, full suite, vet and build passed per the task report; independent spec and quality review approved with no findings. Internal `operation.transition` is an execution ruling for truthful M01 audit sequence, with no webhook delivery. The [plan task register](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order) marks T01-T06 done and T07 in progress. M00 production inventory remains incomplete; no merge/deployment approval.
