@@ -113,8 +113,8 @@ Not delivered: dumps/encryption (M02), remote commits/upload (M03), restore (M04
 | T03 | Bounded secret-file resolver | T02 | done | `26500dbbbd6003759af31b3cb3dd29d20989a7a2`; non-root native WSL focused tests, race, full suite, vet/build; independent review approved |
 | T04 | Safe rotating structured logs | T01 | done | `1b04bc0dc69fae27f8a79797bcad182d03914a48`, fix `14e653a17d03baabfa88165960bc9a4abf22e2d0`; native WSL RED/GREEN regressions, 14 focused tests, race/full suite, vet/build; two review findings fixed and scoped re-review PASS |
 | T05 | Singleton SQLite ownership and migrations | T01 | done | `16bcdfc000ecf118dca34fec875e1a47a121dfdd`, fix `e8a49c1a8444c76018790bb4c5b89054995832d0`; native WSL 21 state tests, race/full suite, vet/build/module verify, SQLite 3.54.1; two review findings fixed and scoped re-review PASS |
-| T06 | Config revisions, idempotent run state and outbox | T02, T05 | in_progress | T02/T05 reviewed; implementer dispatch pending from `e8a49c1a8444c76018790bb4c5b89054995832d0` |
-| T07 | Linux native-process supervisor | T01 | backlog | none / not_run |
+| T06 | Config revisions, idempotent run state and outbox | T02, T05 | done | `072cd38ab2d725f4229b0fb02c033cbfa50f9206`; native WSL 25 new tests, state race/full suite, vet/build; independent spec and quality review approved, no findings |
+| T07 | Linux native-process supervisor | T01 | in_progress | T01 reviewed; implementer dispatch pending from `072cd38ab2d725f4229b0fb02c033cbfa50f9206` |
 | T08 | Local HTTP contracts and CLI client | T02, T06 | backlog | none / not_run |
 | T09 | Daemon composition, health/shutdown and acceptance harness | T03, T04, T05, T06, T07, T08 | backlog | none / not_run |
 
@@ -517,7 +517,7 @@ This is an additive M01 subset: delivery states expand in M07; source/destinatio
 
 **Dependencies:** T02/T05. **Files:** T06 row. **Acceptance:** M01-AC03/05/10/11. **Consumes:** normalized Config, Store, safeerr. **Produces:** Activate/BeginRun/Move/GetRun/ListRuns/Jobs/ProbeWrite/Recover signatures.
 
-- [ ] Write this package-state test fixture in runs_test.go (imports bytes/context/os/path/filepath/strings/testing/time, config and yaml). It reads no real secrets. The recipient is a synthetic fixture because cryptographic validation is outside M01.
+- [x] Write this package-state test fixture in runs_test.go (imports bytes/context/os/path/filepath/strings/testing/time, config and yaml). It reads no real secrets. The recipient is a synthetic fixture because cryptographic validation is outside M01.
 
 ```go
 func newFixture(t *testing.T) (*Store,string) {
@@ -556,9 +556,9 @@ func TestRunAndOutboxRollbackTogether(t *testing.T) {
 
 `Store.db *sql.DB` is the private T05 field used by same-package tests; production callers never receive it.
 
-- [ ] Run `go test ./internal/state -run TestRunAndOutboxRollbackTogether -count=1 -v`; observe RED.
-- [ ] Implement Activate as a transaction: insert-or-verify immutable config/hash bytes; create stable job IDs as SHA-256(configID + NUL + jobID); persist redacted channel revisions; switch active_config; cancel pending deliveries for removed/disabled channels; do not delete historical revisions/runs. Same hash with different snapshot bytes is a conflict, not an overwrite. Jobs returns only enabled jobs from active_config.
-- [ ] Implement run mutation with parameterized SQL and the transaction boundaries below. PayloadHash binds job_revision_id and command semantics, not arbitrary raw JSON ordering. Reject unrecognized terminal states/codes; ID validation occurs before transactions. Work cancellation changes state, never runs a shell.
+- [x] Run `go test ./internal/state -run TestRunAndOutboxRollbackTogether -count=1 -v`; observe RED.
+- [x] Implement Activate as a transaction: insert-or-verify immutable config/hash bytes; create stable job IDs as SHA-256(configID + NUL + jobID); persist redacted channel revisions; switch active_config; cancel pending deliveries for removed/disabled channels; do not delete historical revisions/runs. Same hash with different snapshot bytes is a conflict, not an overwrite. Jobs returns only enabled jobs from active_config.
+- [x] Implement run mutation with parameterized SQL and the transaction boundaries below. PayloadHash binds job_revision_id and command semantics, not arbitrary raw JSON ordering. Reject unrecognized terminal states/codes; ID validation occurs before transactions. Work cancellation changes state, never runs a shell.
 
 ```text
 BeginRun transaction:
@@ -579,11 +579,13 @@ Move transaction:
 
 M01 state events are `operation.queued`, `operation.cancelled`, `operation.interrupted`; they are internal audit events and have no webhook subscription in v1. `backup.started` is emitted when a later executor enters preflight; `backup.completed/degraded/failed` only when later real execution reaches those outcomes. Do not generate fictional backup success in M01. Allowed transitions: queued->preflight/cancelled/interrupted; preflight->dumping/failed/cancelled/interrupted; dumping->delivering/failed/cancelled/interrupted; delivering->succeeded/degraded/failed/cancelled/interrupted. Terminal states reject further Move. Backend does not expose arbitrary Move over HTTP.
 
+**Execution ruling (2026-10-25):** Every Move requires an audit event, so other M01 transitions use typed internal `operation.transition` with redacted from/to state and zero webhook deliveries. This does not claim backup execution. Channel routing tests use a test-owned synthetic external event row to verify revision pinning without producing a real backup event or outbound request.
+
 Implement `Store.Cancel` in runs.go with one transaction: look up run_commands.request_id, require identical runID/kind/payload hash on replay and return the stored terminal run; otherwise require queued state, update to cancelled and insert run_commands/result_version plus its internal event together. Reject use of a request ID already used for BeginRun and vice versa. A private `moveTx(ctx, tx, transition)` helper performs the same CAS/event rules inside the existing transaction; never call a public DB-opening method while holding the only connection. Concurrent requests serialize at the single writer; request-id checks and writes remain in one transaction.
 
-- [ ] Implement ListRuns using stable descending `(started_at,id)` keyset predicates and limit+1, returning no raw config/credentials. Decode/reject invalid cursors/limits before SQL. GetRun unknown -> NotFound. ProbeWrite uses a short BEGIN/update tick/COMMIT and checks commit errors, so a readable DB cannot claim readiness without a successful durable write. Recover marks only queued/preflight/dumping M01-owned runs interrupted with an event in a transaction; delivering states require later provider reconciliation and must block operational readiness instead of blindly succeeding/retrying. Do not remove or reset existing history.
-- [ ] Add `TestBeginRunReplayAndConflict` (same request repeat yields same ID/version, changed job/hash conflicts), `TestConcurrentBeginRunSingleEvent` (20 goroutines), `TestStaleTransitionRollback`, `TestTerminalStateImmutable`, `TestConfigHistorySurvivesRemoval`, `TestZeroChannelsNoDeliveries`, `TestRoutesUseChannelRevision`, `TestDisabledChannelCancelsPending`, `TestHistoryCursorStable`, `TestRecoverIsIdempotent`, `TestWriteProbeFullDisk`.
-- [ ] Add replay-after-disable coverage. Change only active_config eligibility, not the original immutable revision or request binding.
+- [x] Implement ListRuns using stable descending `(started_at,id)` keyset predicates and limit+1, returning no raw config/credentials. Decode/reject invalid cursors/limits before SQL. GetRun unknown -> NotFound. ProbeWrite uses a short BEGIN/update tick/COMMIT and checks commit errors, so a readable DB cannot claim readiness without a successful durable write. Recover marks only queued/preflight/dumping M01-owned runs interrupted with an event in a transaction; delivering states require later provider reconciliation and must block operational readiness instead of blindly succeeding/retrying. Do not remove or reset existing history.
+- [x] Add `TestBeginRunReplayAndConflict` (same request repeat yields same ID/version, changed job/hash conflicts), `TestConcurrentBeginRunSingleEvent` (20 goroutines), `TestStaleTransitionRollback`, `TestTerminalStateImmutable`, `TestConfigHistorySurvivesRemoval`, `TestZeroChannelsNoDeliveries`, `TestRoutesUseChannelRevision`, `TestDisabledChannelCancelsPending`, `TestHistoryCursorStable`, `TestRecoverIsIdempotent`, `TestWriteProbeFullDisk`.
+- [x] Add replay-after-disable coverage. Change only active_config eligibility, not the original immutable revision or request binding.
 
 ```go
 func TestReplaySurvivesDisabledJob(t *testing.T) {
@@ -599,9 +601,9 @@ func TestReplaySurvivesDisabledJob(t *testing.T) {
     if _,_,err=s.BeginRun(ctx,b);err==nil {t.Fatal("new work accepted for disabled job")}
 }
 ```
-- [ ] For full disk, set SQLite `max_page_count` to its current page count on a temporary fixture, consume available free pages with test-owned writes and perform a large bounded snapshot/run transaction; assert driver SQLITE_FULL, no partial operation/event, failed ProbeWrite where a real write cannot succeed and readiness unavailable. Also inject a driver write failure at the transaction seam to cover small writes that still fit free pages. Do not fill the host filesystem or accept chmod-only tests as SQLITE_FULL evidence.
-- [ ] Run `go test ./internal/state -count=1`, `go test -race ./internal/state -run 'TestConcurrent|TestRunAndOutbox|TestHistory' -count=1`; expect PASS with exact row/event/delivery counts and no duplicated effects.
-- [ ] Commit `feat(state): persist idempotent runs and event outbox`; record hash/evidence. M01 exposes primitives and fixture history; no worker actually dumps databases.
+- [x] For full disk, set SQLite `max_page_count` to its current page count on a temporary fixture, consume available free pages with test-owned writes and perform a large bounded snapshot/run transaction; assert driver SQLITE_FULL, no partial operation/event, failed ProbeWrite where a real write cannot succeed and readiness unavailable. Also inject a driver write failure at the transaction seam to cover small writes that still fit free pages. Do not fill the host filesystem or accept chmod-only tests as SQLITE_FULL evidence.
+- [x] Run `go test ./internal/state -count=1`, `go test -race ./internal/state -run 'TestConcurrent|TestRunAndOutbox|TestHistory' -count=1`; expect PASS with exact row/event/delivery counts and no duplicated effects.
+- [x] Commit `feat(state): persist idempotent runs and event outbox`; record hash/evidence. M01 exposes primitives and fixture history; no worker actually dumps databases.
 
 ## T07 - Bounded Linux process supervision
 

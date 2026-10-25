@@ -2,6 +2,10 @@
 
 **Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
 
+## T06 reviewed state primitives and T07 handoff - 2026-10-25
+
+T06 is complete in `072cd38ab2d725f4229b0fb02c033cbfa50f9206` with clean independent review. Native WSL tests, required race subset, full Go suite, vet and build passed per the ignored task report. [Plan status](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order): T01-T06 done, T07 in progress, T08-T09 backlog. Internal `operation.transition` preserves audit sequence without claiming real backup execution; synthetic routing tests do not send webhooks. T07 owns only the native-process supervisor and its tests, with no shell, arbitrary executable or actual database dump. M00 production inventory remains incomplete; no merge/deployment approval.
+
 ## T05 reviewed SQLite and T06 handoff - 2026-10-25
 
 T05 is complete in `16bcdfc000ecf118dca34fec875e1a47a121dfdd` and `e8a49c1a8444c76018790bb4c5b89054995832d0`, with independent review and fix re-review. Native WSL verifies SQLite 3.54.1, singleton locking, private state files, checked migration/backup/rollback, process-crash recovery and lease-draining Close. [Plan status](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order): T01-T05 done, T06 in progress, T07-T09 backlog. T06 must close rows/connections and commit or roll back transactions before awaiting `Store.Close`; an outstanding lease deliberately keeps flock ownership and blocks Close. This evidence uses synthetic local fixtures; M00 production inventory remains incomplete and merge/deployment remain unapproved.

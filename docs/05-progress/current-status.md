@@ -2,6 +2,10 @@
 
 **Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
 
+## T06 reviewed transactional history - 2026-10-25
+
+T06 config revisions, idempotent run state, audit events and transactional outbox primitives are complete in `072cd38ab2d725f4229b0fb02c033cbfa50f9206`. Native WSL focused tests, required race subset, full suite, vet and build passed per the task report; independent spec and quality review approved with no findings. Internal `operation.transition` is an execution ruling for truthful M01 audit sequence, with no webhook delivery. The [plan task register](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order) marks T01-T06 done and T07 in progress. M00 production inventory remains incomplete; no merge/deployment approval.
+
 ## T05 reviewed SQLite foundation - 2026-10-25
 
 T05 singleton state ownership, SQLite 3.54.1 and checked schema migrations are complete in `16bcdfc000ecf118dca34fec875e1a47a121dfdd` plus fix `e8a49c1a8444c76018790bb4c5b89054995832d0`. Native WSL 21 state tests, race/full suite, vet/build/module verification passed per the task report. Independent review found ancestor path substitution and early flock release while SQL leases remain; regression tests and scoped re-review closed both. The [plan task register](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order) marks T01-T05 done and T06 in progress. M00 production inventory remains incomplete; no merge/deployment approval.
