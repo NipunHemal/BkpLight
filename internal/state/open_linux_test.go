@@ -1,7 +1,6 @@
 package state
 
 import (
-	"bkplight.local/bkplight/internal/safeerr"
 	"context"
 	"database/sql"
 	"errors"
@@ -12,6 +11,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"bkplight.local/bkplight/internal/safeerr"
 )
 
 func openTestStore(t *testing.T) *Store {
@@ -298,5 +299,140 @@ func TestSecondOwnerRejected(t *testing.T) {
 	if err == nil {
 		b.Close()
 		t.Fatal("second owner accepted")
+	}
+}
+
+func TestAncestorSwapDuringDirectoryAcquisition(t *testing.T) {
+	base := t.TempDir()
+	ancestor := filepath.Join(base, "ancestor")
+	moved := filepath.Join(base, "original-ancestor")
+	outside := filepath.Join(base, "outside")
+	if err := os.MkdirAll(filepath.Join(ancestor, "state"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(outside, "state"), 0750); err != nil {
+		t.Fatal(err)
+	}
+	original, err := os.Stat(filepath.Join(ancestor, "state"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	parent, err := os.Open(ancestor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer parent.Close()
+	// The ancestor changes after acquisition and before the final directory is
+	// resolved. Both targets belong to this UID; ownership checks alone cannot
+	// detect the escape through the substituted ancestor.
+	if err = os.Rename(ancestor, moved); err != nil {
+		t.Fatal(err)
+	}
+	if err = os.Symlink(outside, ancestor); err != nil {
+		t.Fatal(err)
+	}
+	dir, err := acquireDirectoryAt(parent, "state")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer dir.Close()
+	acquired, err := dir.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !os.SameFile(original, acquired) {
+		t.Fatal("ancestor substitution escaped the acquired directory")
+	}
+	external, err := os.Stat(filepath.Join(outside, "state"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if external.Mode().Perm() != 0750 {
+		t.Fatal("outside directory permissions changed")
+	}
+}
+
+func TestCloseRetainsOwnershipUntilLeasesDrain(t *testing.T) {
+	for _, kind := range []string{"connection", "transaction"} {
+		t.Run(kind, func(t *testing.T) {
+			s := openTestStore(t)
+			directory := s.directory.Name()
+			var release func() error
+			var write func() error
+			if kind == "connection" {
+				conn, err := s.db.Conn(context.Background())
+				if err != nil {
+					t.Fatal(err)
+				}
+				release = conn.Close
+				write = func() error {
+					_, err := conn.ExecContext(context.Background(), "UPDATE health_probe SET tick=81")
+					return err
+				}
+			} else {
+				tx, err := s.db.BeginTx(context.Background(), nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+				release = tx.Commit
+				write = func() error {
+					_, err := tx.ExecContext(context.Background(), "UPDATE health_probe SET tick=81")
+					return err
+				}
+				defer tx.Rollback()
+			}
+			defer release()
+			done := make(chan error, 1)
+			go func() { done <- s.Close() }()
+			// Wait for shutdown to close admission. A retained lease prevents pool
+			// access before shutdown, so context expiry means shutdown has not run yet.
+			deadline := time.Now().Add(5 * time.Second)
+			for {
+				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+				conn, err := s.db.Conn(ctx)
+				cancel()
+				if conn != nil {
+					conn.Close()
+					t.Fatal("second pool connection admitted")
+				}
+				if err != nil && !errors.Is(err, context.DeadlineExceeded) {
+					break
+				}
+				if time.Now().After(deadline) {
+					t.Fatal("shutdown did not close admission")
+				}
+			}
+			other, err := Open(context.Background(), Options{Directory: directory})
+			if err == nil {
+				other.Close()
+				t.Fatal("second owner accepted while old lease can still write")
+			}
+			if err = write(); err != nil {
+				t.Fatal("retained lease failed before release", err)
+			}
+			if err = release(); err != nil {
+				t.Fatal(err)
+			}
+			select {
+			case err = <-done:
+				if err != nil {
+					t.Fatal(err)
+				}
+			case <-time.After(5 * time.Second):
+				t.Fatal("Close did not finish after lease drained")
+			}
+			other, err = Open(context.Background(), Options{Directory: directory})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer other.Close()
+			var tick int
+			if err = other.db.QueryRow("SELECT tick FROM health_probe").Scan(&tick); err != nil || tick != 81 {
+				t.Fatalf("handoff value %d: %v", tick, err)
+			}
+			if err = write(); err == nil {
+				t.Fatal("released old lease can still write")
+			}
+		})
 	}
 }

@@ -4,13 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	_ "modernc.org/sqlite"
 	"net/url"
 	"os"
 	"path/filepath"
 	"sync"
 	"syscall"
 	"time"
+
+	_ "modernc.org/sqlite"
 )
 
 // Store exclusively owns the database and retains the singleton lock until
@@ -120,11 +121,25 @@ func (s *Store) verifyPragmas(ctx context.Context) error {
 	return nil
 }
 
+// Close stops pool admission and waits for every connection, transaction and
+// result-set lease to be returned before releasing ownership. Callers must
+// finish their leases before waiting for Close; shutdown never hands ownership
+// to another daemon while an existing lease can still execute SQL.
 func (s *Store) Close() error {
 	s.closeOnce.Do(func() {
 		if s.db != nil {
 			if err := s.db.Close(); err != nil {
 				s.closeErr = unavailable()
+			}
+			// DB.Close only closes idle connections; checked-out Conn/Tx/Rows
+			// can remain usable. OpenConnections includes those connections
+			// until database/sql has closed their physical driver connection.
+			if s.db.Stats().OpenConnections != 0 {
+				ticker := time.NewTicker(time.Millisecond)
+				defer ticker.Stop()
+				for s.db.Stats().OpenConnections != 0 {
+					<-ticker.C
+				}
 			}
 		}
 		// flock is released by closing this descriptor. Keep the inode on disk.

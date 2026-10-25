@@ -1,10 +1,12 @@
 package state
 
 import (
-	"bkplight.local/bkplight/internal/safeerr"
 	"os"
 	"path/filepath"
+	"strings"
 	"syscall"
+
+	"bkplight.local/bkplight/internal/safeerr"
 )
 
 func unavailable() error { return &safeerr.Error{Code: safeerr.Unavailable} }
@@ -12,35 +14,53 @@ func unavailable() error { return &safeerr.Error{Code: safeerr.Unavailable} }
 // acquireDirectory walks without following symlinks and retains the directory
 // descriptor so all state names are interpreted relative to the acquired owner.
 func acquireDirectory(path string) (*os.File, error) {
-	if !filepath.IsAbs(path) || filepath.Clean(path) != path {
+	if !filepath.IsAbs(path) || filepath.Clean(path) != path || path == "/" {
 		return nil, unavailable()
 	}
-	for p := path; ; p = filepath.Dir(p) {
-		info, err := os.Lstat(p)
-		if err != nil && !os.IsNotExist(err) {
-			return nil, unavailable()
-		}
-		if err == nil && !info.IsDir() {
-			return nil, unavailable()
-		}
-		if p == filepath.Dir(p) {
-			break
-		}
-	}
-	if err := os.MkdirAll(path, 0700); err != nil {
-		return nil, unavailable()
-	}
-	before, err := os.Lstat(path)
+	root, err := os.Open("/")
 	if err != nil {
 		return nil, unavailable()
 	}
-	fd, err := syscall.Open(path, syscall.O_RDONLY|syscall.O_DIRECTORY|syscall.O_NOFOLLOW|syscall.O_CLOEXEC, 0)
-	if err != nil {
+	defer root.Close()
+	return acquireDirectoryAt(root, path[1:])
+}
+
+func acquireDirectoryAt(root *os.File, relative string) (*os.File, error) {
+	if relative == "" || filepath.IsAbs(relative) {
 		return nil, unavailable()
 	}
-	dir := os.NewFile(uintptr(fd), path)
+	parts := strings.Split(relative, "/")
+	for _, part := range parts {
+		if part == "" || part == "." || part == ".." {
+			return nil, unavailable()
+		}
+	}
+	// Retained descriptors, rather than re-resolved ancestor names, are the
+	// authority at every step. A concurrent symlink replacement is either
+	// rejected by O_NOFOLLOW or leaves us in the already acquired directory.
+	dir := root
+	for _, part := range parts {
+		flags := syscall.O_RDONLY | syscall.O_DIRECTORY | syscall.O_NOFOLLOW | syscall.O_CLOEXEC
+		fd, err := syscall.Openat(int(dir.Fd()), part, flags, 0)
+		if err == syscall.ENOENT {
+			if makeErr := syscall.Mkdirat(int(dir.Fd()), part, 0700); makeErr == nil || makeErr == syscall.EEXIST {
+				fd, err = syscall.Openat(int(dir.Fd()), part, flags, 0)
+			}
+		}
+		if err != nil {
+			if dir != root {
+				dir.Close()
+			}
+			return nil, unavailable()
+		}
+		next := os.NewFile(uintptr(fd), filepath.Join(dir.Name(), part))
+		if dir != root {
+			dir.Close()
+		}
+		dir = next
+	}
 	info, err := dir.Stat()
-	if err != nil || !os.SameFile(before, info) || !privateOwned(info, true) {
+	if err != nil || !privateOwned(info, true) {
 		dir.Close()
 		return nil, unavailable()
 	}
