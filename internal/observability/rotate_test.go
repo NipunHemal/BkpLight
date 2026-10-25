@@ -3,10 +3,116 @@ package observability
 import (
 	"bytes"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"syscall"
 	"testing"
 	"time"
 )
+
+type interruptedRoot struct{ *os.Root }
+
+func (r interruptedRoot) Link(old, new string) error {
+	if err := r.Root.Link(old, new); err != nil {
+		return err
+	}
+	os.Exit(42) // process disappears immediately after link succeeds
+	return nil
+}
+func (r interruptedRoot) Chtimes(string, time.Time, time.Time) error {
+	os.Exit(42) // atomic rename completed, active not yet reopened
+	return nil
+}
+
+func TestRotationInterruptedRestart(t *testing.T) {
+	if dir := os.Getenv("BKPLIGHT_TEST_ROTATION_CHILD"); dir != "" {
+		l, err := Open(Options{Directory: dir, MaxBytes: 128})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err = l.Write(record()); err != nil {
+			t.Fatal(err)
+		}
+		root, ok := l.root.(*os.Root)
+		if !ok {
+			t.Fatal("unexpected root")
+		}
+		l.root = interruptedRoot{root}
+		_ = l.Write(record())
+		t.Fatal("rotation did not reach interruption boundary")
+	}
+	dir := t.TempDir()
+	child := exec.Command(os.Args[0], "-test.run=^TestRotationInterruptedRestart$")
+	child.Env = append(os.Environ(), "BKPLIGHT_TEST_ROTATION_CHILD="+dir)
+	err := child.Run()
+	exit, ok := err.(*exec.ExitError)
+	if !ok || exit.ExitCode() != 42 {
+		t.Fatal("child did not stop at rotation boundary")
+	}
+	l := openTest(t, Options{Directory: dir, MaxBytes: 128})
+	if !l.Healthy() {
+		t.Fatal("restart unhealthy")
+	}
+	if err := l.Write(record()); err != nil {
+		t.Fatal(err)
+	}
+	files, err := filepath.Glob(filepath.Join(dir, "bkplight*.log"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range files {
+		info, err := os.Stat(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if info.Sys().(*syscall.Stat_t).Nlink != 1 {
+			t.Fatal("interrupted rotation left multiple links")
+		}
+	}
+}
+
+func TestAtomicArchiveRenamePreservesCollision(t *testing.T) {
+	dir := t.TempDir()
+	root, err := os.OpenRoot(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer root.Close()
+	active := filepath.Join(dir, activeName)
+	archive := "bkplight.00000000000000000001.log"
+	target := filepath.Join(dir, archive)
+	if err = os.WriteFile(active, []byte("active\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err = os.WriteFile(target, []byte("foreign\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err = renameArchive(root, archive); err == nil {
+		t.Fatal("collision accepted")
+	}
+	for path, want := range map[string]string{active: "active\n", target: "foreign\n"} {
+		b, err := os.ReadFile(path)
+		if err != nil || string(b) != want {
+			t.Fatal("collision changed data")
+		}
+	}
+	if err = os.Remove(target); err != nil {
+		t.Fatal(err)
+	}
+	if err = renameArchive(root, archive); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = os.Lstat(active); !os.IsNotExist(err) {
+		t.Fatal("rename retained active name")
+	}
+	info, err := os.Stat(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Sys().(*syscall.Stat_t).Nlink != 1 {
+		t.Fatal("rename created extra link")
+	}
+}
 
 func TestRotationAgeAndRestart(t *testing.T) {
 	dir := t.TempDir()

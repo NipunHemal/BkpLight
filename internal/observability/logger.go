@@ -31,7 +31,7 @@ type Options struct {
 type Logger struct {
 	mu         sync.Mutex
 	opts       Options
-	root       *os.Root
+	root       logRoot
 	writer     io.WriteCloser
 	activeInfo os.FileInfo
 	size       int64
@@ -40,10 +40,24 @@ type Logger struct {
 	closed     bool
 }
 
+// logRoot keeps filesystem operations rooted and permits private test wrappers.
+type logRoot interface {
+	Open(string) (*os.File, error)
+	OpenFile(string, int, os.FileMode) (*os.File, error)
+	Lstat(string) (os.FileInfo, error)
+	Remove(string) error
+	Chtimes(string, time.Time, time.Time) error
+	Close() error
+}
+
 func invalid() error     { return &safeerr.Error{Code: safeerr.Invalid} }
 func unavailable() error { return &safeerr.Error{Code: safeerr.Unavailable} }
 
 func Open(o Options) (*Logger, error) {
+	return openWithRoot(o, os.OpenRoot)
+}
+
+func openWithRoot(o Options, acquire func(string) (*os.Root, error)) (*Logger, error) {
 	if !filepath.IsAbs(o.Directory) || o.MaxBytes < 0 || o.MaxFiles < 0 || o.MaxAge < 0 {
 		return nil, invalid()
 	}
@@ -79,13 +93,28 @@ func Open(o Options) (*Logger, error) {
 	if e != nil || !privateDirectory(info) {
 		return nil, unavailable()
 	}
-	root, e := os.OpenRoot(o.Directory)
+	root, e := acquire(o.Directory)
 	if e != nil {
+		return nil, unavailable()
+	}
+	// Bind the pre-open checks to the acquired directory before any mutation.
+	// A writable ancestor may have replaced the configured path in between.
+	directory, e := root.Open(".")
+	if e != nil {
+		_ = root.Close()
+		return nil, unavailable()
+	}
+	opened, e := directory.Stat()
+	if e != nil || !privateDirectory(opened) || !os.SameFile(info, opened) {
+		_ = directory.Close()
+		_ = root.Close()
 		return nil, unavailable()
 	}
 	// Tighten a same-owner directory (including testing.TempDir's 0755 child).
 	// Group/world-writable directories were rejected before acquiring this handle.
-	if e = root.Chmod(".", 0700); e != nil {
+	e = directory.Chmod(0700)
+	closeErr := directory.Close()
+	if e != nil || closeErr != nil {
 		_ = root.Close()
 		return nil, unavailable()
 	}

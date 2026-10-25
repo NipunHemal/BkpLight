@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
 	"syscall"
+	"unsafe"
 )
 
 const activeName = "bkplight.log"
@@ -115,11 +117,7 @@ func (l *Logger) rotate() error {
 	}
 	name := fmt.Sprintf("bkplight.%020d.log", l.next)
 	l.next++
-	// Link then unlink is a no-replace rename: a foreign destination is never replaced.
-	if e = l.root.Link(activeName, name); e != nil {
-		return e
-	}
-	if e = l.root.Remove(activeName); e != nil {
+	if e = renameArchive(l.root, name); e != nil {
 		return e
 	}
 	now := l.opts.Now()
@@ -127,6 +125,48 @@ func (l *Logger) rotate() error {
 		return e
 	}
 	return l.openActive()
+}
+
+// renameArchive is one atomic Linux operation; it never replaces a destination.
+// Both names are simple owned names relative to the same anchored directory fd.
+// The frozen syscall package lacks Renameat2 on amd64. Numbers below come from
+// Linux asm/unistd_64.h (amd64) and asm-generic/unistd.h (arm64); flags: linux/fs.h.
+// Unsupported architectures/kernels/filesystems fail closed, with no fallback.
+func renameArchive(root logRoot, name string) error {
+	if _, ok := archiveID(name); !ok {
+		return unavailable()
+	}
+	var number uintptr
+	switch runtime.GOARCH {
+	case "amd64":
+		number = 316
+	case "arm64":
+		number = 276
+	default:
+		return syscall.ENOSYS
+	}
+	directory, err := root.Open(".")
+	if err != nil {
+		return err
+	}
+	defer directory.Close()
+	oldName, err := syscall.BytePtrFromString(activeName)
+	if err != nil {
+		return err
+	}
+	newName, err := syscall.BytePtrFromString(name)
+	if err != nil {
+		return err
+	}
+	const renameNoReplace = 1
+	fd := directory.Fd()
+	_, _, errno := syscall.Syscall6(number, fd, uintptr(unsafe.Pointer(oldName)), fd, uintptr(unsafe.Pointer(newName)), renameNoReplace, 0)
+	runtime.KeepAlive(oldName)
+	runtime.KeepAlive(newName)
+	if errno != 0 {
+		return errno
+	}
+	return nil
 }
 
 type archive struct {

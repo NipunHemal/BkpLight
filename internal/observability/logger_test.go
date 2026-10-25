@@ -188,3 +188,49 @@ func TestLoggerAllowlistAndTimestamp(t *testing.T) {
 		t.Fatal("non RFC3339 timestamp accepted")
 	}
 }
+
+func TestLoggerRejectsDirectorySwapBeforeChmod(t *testing.T) {
+	parent := t.TempDir()
+	dir := filepath.Join(parent, "logs")
+	target := filepath.Join(parent, "other-owned")
+	for _, p := range []string{dir, target} {
+		if err := os.Mkdir(p, 0755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	foreign := filepath.Join(target, "bkplight.00000000000000000001.log")
+	if err := os.WriteFile(foreign, []byte("preserve\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	old := time.Now().Add(-30 * 24 * time.Hour)
+	if err := os.Chtimes(foreign, old, old); err != nil {
+		t.Fatal(err)
+	}
+	l, err := openWithRoot(Options{Directory: dir}, func(path string) (*os.Root, error) {
+		if err := os.Rename(dir, dir+".saved"); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Symlink(target, dir); err != nil {
+			t.Fatal(err)
+		}
+		return os.OpenRoot(path)
+	})
+	if err == nil {
+		_ = l.Close()
+		t.Error("swapped directory accepted")
+	}
+	info, err := os.Stat(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Mode().Perm() != 0755 {
+		t.Error("replacement directory chmodded")
+	}
+	if _, err = os.Stat(filepath.Join(target, activeName)); !os.IsNotExist(err) {
+		t.Error("replacement directory received log file")
+	}
+	b, err := os.ReadFile(foreign)
+	if err != nil || string(b) != "preserve\n" {
+		t.Error("replacement directory archive pruned")
+	}
+}
