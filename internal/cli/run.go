@@ -10,9 +10,10 @@ import (
 
 	"bkplight.local/bkplight/internal/config"
 	"bkplight.local/bkplight/internal/safeerr"
+	"bkplight.local/bkplight/internal/secrets"
 )
 
-func Run(_ context.Context, args []string, out, errOut io.Writer) int {
+func Run(ctx context.Context, args []string, out, errOut io.Writer) int {
 	invalidCommand := func() int {
 		fmt.Fprintln(errOut, (&safeerr.Error{Code: safeerr.Invalid, Field: "command"}).Error())
 		return 2
@@ -28,6 +29,7 @@ func Run(_ context.Context, args []string, out, errOut io.Writer) int {
 		flags := flag.NewFlagSet("config validate", flag.ContinueOnError)
 		flags.SetOutput(io.Discard)
 		path := flags.String("config", "", "configuration file")
+		checkSecrets := flags.Bool("check-secrets", false, "check active secret references")
 		if err := flags.Parse(args[2:]); err != nil || flags.NArg() != 0 || *path == "" {
 			return invalidCommand()
 		}
@@ -42,6 +44,24 @@ func Run(_ context.Context, args []string, out, errOut io.Writer) int {
 			public := safeerr.Public(err)
 			fmt.Fprintln(errOut, public.Error())
 			return 2
+		}
+		if refs := config.SecretRefs(c); *checkSecrets && len(refs) != 0 {
+			resolver, err := secrets.New(c.Service.SecretRoots, 64<<10)
+			if err != nil {
+				public := safeerr.Public(err)
+				fmt.Fprintln(errOut, public.Error())
+				return 2
+			}
+			defer resolver.Close()
+			for _, ref := range refs {
+				data, err := resolver.Read(ctx, ref)
+				clear(data)
+				if err != nil {
+					public := safeerr.Public(err)
+					fmt.Fprintln(errOut, public.Error())
+					return 2
+				}
+			}
 		}
 		revision, _, err := config.Revision(c)
 		if err != nil {
