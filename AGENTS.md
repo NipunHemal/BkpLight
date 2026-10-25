@@ -45,6 +45,8 @@ Guide agents through verified project context, scoped work and evidence-based co
 
 Use installed skills as appropriate to the authorized task, not once in a rigid sequence. Do not copy installed Superpowers skills into this repository.
 
+Restored on 2026-10-25 from the official `obra/superpowers` checkout at `C:\Users\USER\.codex\superpowers`, revision `2ce8aa15d05bd57213e6f746f953aafb7ded7a8b` (v7.0.1). The user skill discovery junction `C:\Users\USER\.agents\skills\superpowers` targets that checkout's `skills` directory. In this native-skills installation, table references such as `superpowers:writing-plans` identify the official skill family; Codex discovers the manifest name `writing-plans`, invoked as `$writing-plans` (likewise `$brainstorming`, etc.). Do not install another discoverable copy. The current official guide recommends marketplace installation; its remote registration returned `Plugin not found`, so this restoration uses Codex-supported linked skill discovery. No legacy bootstrap is required.
+
 | Skill | Use |
 |---|---|
 | superpowers:brainstorming | Clarify authorized design and behavior changes before implementation |

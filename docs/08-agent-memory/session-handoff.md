@@ -2,6 +2,12 @@
 
 **Document status:** Detailed M01 plan ready for review; H1 held, H2 execution unapproved.
 
+## Skill restoration handoff - 2026-10-25
+
+Superpowers restoration only was explicitly authorized and completed using the official v7.0.1 checkout at `2ce8aa15d05bd57213e6f746f953aafb7ded7a8b` and the user discovery junction documented in AGENTS.md. Fresh Codex CLI 0.157.0 `skills/list` discovery returned 15 enabled official skills, including all 11 lifecycle skills, with no errors. Marketplace remote registration failed with `Plugin not found`; downloaded caches remain inactive, and the obsolete local registration created during diagnosis is disabled. Existing sessions should restart to refresh skill metadata/configuration. Native invocation uses `$writing-plans` and other manifest names; `superpowers:*` in lifecycle documents denotes the official family.
+
+Restoration grants no H2/H3/H4, implementation, delegation, merge or deployment permission. The M00/M01 fixture-only prerequisite disposition remains unresolved. Resume no application work from this setup task; preserve the current plan and its backlog states.
+
 ## Purpose
 
 Resume from verified authorization and scoped planning output without treating a roadmap as permission to implement.

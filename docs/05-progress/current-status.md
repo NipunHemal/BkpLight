@@ -2,6 +2,12 @@
 
 **Document status:** PLAN-M01 detailed plan prepared for H2 review; H1 held, implementation/merge/deployment unapproved.
 
+## Superpowers restoration - 2026-10-25
+
+The user explicitly authorized skill restoration only. Codex CLI 0.157.0 on Windows NT 10.0.26300.0 now discovers 15 enabled official Superpowers skills through the user-level junction documented in AGENTS.md. A fresh `skills/list` request with `forceReload: true` for this workspace returned zero discovery errors; all 11 lifecycle skills have readable SKILL.md files with name/description frontmatter. The official source checkout is v7.0.1 at `2ce8aa15d05bd57213e6f746f953aafb7ded7a8b`. The marketplace download alone did not establish discovery: remote registration returned HTTP 404 `Plugin not found`. Its unused local registration was disabled; downloaded caches were retained without another discovery link. Existing project skills are preserved.
+
+The harmless planning load reads the official writing-plans instructions without creating a plan or executing tasks. Project plan paths and H2/mode gates remain authoritative. The unresolved M00/M01 fixture-only disposition remains unresolved. No application code, dependency installation, implementation, merge or deployment is authorized by restoration. Restart existing Codex sessions to refresh their initial skill catalog/configuration; fresh CLI discovery already passes.
+
 ## Purpose
 
 Record current authorization, observed workspace state and evidence, preserving previous setup/discovery/design snapshots as history.
