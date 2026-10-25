@@ -2,6 +2,10 @@
 
 **Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
 
+## T04 reviewed safe logs - 2026-10-25
+
+T04 bounded structured logs and rotation are complete in `1b04bc0dc69fae27f8a79797bcad182d03914a48` plus fix `14e653a17d03baabfa88165960bc9a4abf22e2d0`. Native WSL behavioral RED/GREEN regressions, 14 focused tests, race/full suite, vet and build passed per the task report. Independent review found process-crash rotation and acquired-directory identity issues; both were fixed and scoped re-review passed. The [plan task register](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order) marks T01-T04 done and T05 in progress. M00 production inventory remains incomplete; no merge or deployment approval.
+
 ## T03 reviewed secret resolver - 2026-10-25
 
 T03 bounded, root-contained secret reads and optional CLI checks are complete in `26500dbbbd6003759af31b3cb3dd29d20989a7a2`. Non-root native WSL focused tests, resolver race, full Go suite, vet and build passed per implementer evidence; independent spec and quality review approved the four-file diff with no findings. [Plan status](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order): T01-T03 done, T04 ready, later tasks backlog. M00 production inventory remains incomplete; no merge/deployment approval.

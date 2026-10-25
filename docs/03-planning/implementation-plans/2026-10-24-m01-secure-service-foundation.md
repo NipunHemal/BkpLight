@@ -111,8 +111,8 @@ Not delivered: dumps/encryption (M02), remote commits/upload (M03), restore (M04
 | T01 | Module, shared safe errors and CLI skeleton | Entry gates | done | `99248f5e1a5089a4e405ccd63235a02f9dd900ba`; native WSL RED missing APIs, GREEN seven tests, `go test ./...`, vet/build; independent task review approved 2026-10-25 |
 | T02 | Strict typed configuration and offline validation | T01 | done | `18a2e4c250f9095a8502c6ea9d6c09a5a378e304`, fix `6975a64b73cf3fb4eb2de0388deaa9f90cdc4487`; native WSL full tests/fuzz 38,741/vet/build/CLI/module verify; independent review issue fixed and scoped re-review PASS |
 | T03 | Bounded secret-file resolver | T02 | done | `26500dbbbd6003759af31b3cb3dd29d20989a7a2`; non-root native WSL focused tests, race, full suite, vet/build; independent review approved |
-| T04 | Safe rotating structured logs | T01 | ready | T01 reviewed; implementation not_run |
-| T05 | Singleton SQLite ownership and migrations | T01 | backlog | none / not_run |
+| T04 | Safe rotating structured logs | T01 | done | `1b04bc0dc69fae27f8a79797bcad182d03914a48`, fix `14e653a17d03baabfa88165960bc9a4abf22e2d0`; native WSL RED/GREEN regressions, 14 focused tests, race/full suite, vet/build; two review findings fixed and scoped re-review PASS |
+| T05 | Singleton SQLite ownership and migrations | T01 | in_progress | T01 and T04 reviewed; implementer dispatch pending from `14e653a17d03baabfa88165960bc9a4abf22e2d0` |
 | T06 | Config revisions, idempotent run state and outbox | T02, T05 | backlog | none / not_run |
 | T07 | Linux native-process supervisor | T01 | backlog | none / not_run |
 | T08 | Local HTTP contracts and CLI client | T02, T06 | backlog | none / not_run |
@@ -417,8 +417,8 @@ func TestRotationKeepsBoundedFiles(t *testing.T) {
 }
 ```
 
-- [ ] Run `go test ./internal/observability -run TestRotationKeepsBoundedFiles -count=1 -v`; observe RED.
-- [ ] Implement mutex-serialized JSON-line writes, enum validation and rotation with the exact sequence below. MessageCode allowlist: `service.started`, `service.stopped`, `service.degraded`, `config.activated`, `state.failed`, `process.started`, `process.finished`, `process.cancelled`. Level: debug/info/warn/error; RunID is empty or 32 lowercase hex chars; ErrorCode empty or safeerr code. Invalid fields are rejected without reflecting their values.
+- [x] Run `go test ./internal/observability -run TestRotationKeepsBoundedFiles -count=1 -v`; observe RED.
+- [x] Implement mutex-serialized JSON-line writes, enum validation and rotation with the exact sequence below. MessageCode allowlist: `service.started`, `service.stopped`, `service.degraded`, `config.activated`, `state.failed`, `process.started`, `process.finished`, `process.cancelled`. Level: debug/info/warn/error; RunID is empty or 32 lowercase hex chars; ErrorCode empty or safeerr code. Invalid fields are rejected without reflecting their values.
 
 ```text
 encode the typed record into a bounded byte buffer, with UTC RFC3339Nano time
@@ -432,9 +432,9 @@ never remove active file, unrelated files, symlinks or unknown directories
 Close flushes/closes once; Healthy reports write/rotation errors
 ```
 
-- [ ] Add `TestLoggerRejectsUnsafeFields` (pass synthetic credential in MessageCode/RunID; no output includes it), `TestRotationAgeAndRestart`, `TestRotationPreservesForeignFiles`, `TestLoggerConcurrentWrites`, `TestLoggerWriteFailureDegrades` (inject writer failure in private test seam; no production injection switch), `TestOversizeRecordRejected`. Age tests use injected Now, not sleeps. Default remains 20 MiB/10 total files/14 days; tests use small explicit values.
-- [ ] Run `go test ./internal/observability -count=1`, `go test -race ./internal/observability -count=1`; expect valid JSON, bounded file count/size and no reported secrets. Stderr fallback uses a fixed code only, not the failing path/error text.
-- [ ] Commit `feat(logging): add bounded safe structured logs`; record evidence. No webhook sender is introduced.
+- [x] Add `TestLoggerRejectsUnsafeFields` (pass synthetic credential in MessageCode/RunID; no output includes it), `TestRotationAgeAndRestart`, `TestRotationPreservesForeignFiles`, `TestLoggerConcurrentWrites`, `TestLoggerWriteFailureDegrades` (inject writer failure in private test seam; no production injection switch), `TestOversizeRecordRejected`. Age tests use injected Now, not sleeps. Default remains 20 MiB/10 total files/14 days; tests use small explicit values.
+- [x] Run `go test ./internal/observability -count=1`, `go test -race ./internal/observability -count=1`; expect valid JSON, bounded file count/size and no reported secrets. Stderr fallback uses a fixed code only, not the failing path/error text.
+- [x] Commit `feat(logging): add bounded safe structured logs`; record evidence. No webhook sender is introduced. Review findings on crash-safe rename and opened directory identity were fixed in `14e653a`; scoped re-review passed.
 
 ## T05 - Singleton SQLite and migration baseline
 
