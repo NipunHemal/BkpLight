@@ -1,0 +1,15 @@
+version: 1
+service:
+  timezone: Asia/Colombo
+  state_dir: /var/lib/bkplight/state
+  socket_path: /run/bkplight/control.sock
+  secret_roots: [/run/secrets]
+  staging_dir: /var/lib/bkplight/staging
+sources: {}
+destinations: {}
+jobs: {}
+restore_targets: {}
+verification_targets: {}
+encryption: {}
+notifications: {channels: {}}
+logging: {directory: /var/log/bkplight}
