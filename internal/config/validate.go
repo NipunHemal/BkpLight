@@ -300,19 +300,21 @@ func destinationBinding(d Destination) (string, error) {
 		if err != nil || u.Scheme != "https" || !hostOK(u.Hostname()) || u.User != nil || u.RawQuery != "" || u.ForceQuery || u.Fragment != "" || strings.Contains(d.Endpoint, "#") || u.Opaque != "" {
 			return "", invalid("destinations.endpoint")
 		}
-		port := u.Port()
-		if port != "" {
-			p, e := strconv.Atoi(port)
+		port := 443
+		portText := u.Port()
+		if portText != "" {
+			p, e := strconv.Atoi(portText)
 			if e != nil || p < 1 || p > 65535 {
 				return "", invalid("destinations.endpoint")
 			}
+			port = p
 		}
 		host := normalizedHost(u.Hostname())
 		if strings.Contains(host, ":") {
 			host = "[" + host + "]"
 		}
-		if port != "" && port != "443" {
-			host += ":" + port
+		if port != 443 {
+			host += ":" + strconv.Itoa(port)
 		}
 		endpoint = "https://" + host + strings.TrimRight(u.EscapedPath(), "/")
 	}

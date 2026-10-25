@@ -161,6 +161,20 @@ func TestTargetAndDestinationCollisions(t *testing.T) {
 	s = strings.Replace(active(t), "restore_targets: {}", "restore_targets: "+strings.Replace(target, "DB.INTERNAL.", "restore.internal", 1), 1)
 	reject(t, strings.Replace(s, "verification_targets: {}", "verification_targets: "+strings.Replace(target, "DB.INTERNAL.", "verify.internal", 1), 1))
 }
+
+func TestDestinationBindingNormalizesNumericPorts(t *testing.T) {
+	for name, endpoints := range map[string][2]string{
+		"default_https_port": {"https://s3.example.invalid", "https://S3.EXAMPLE.INVALID:0443/"},
+		"leading_zero_port":  {"https://s3.example.invalid:8443", "https://S3.EXAMPLE.INVALID:08443/"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			s := strings.Replace(active(t), "destinations: {remote:", "destinations: {copy: {type: r2, endpoint: '"+endpoints[1]+"', bucket: fixture, prefix: backups, credentials_file: /run/secrets/copy}, remote:", 1)
+			s = strings.Replace(s, "endpoint: 'https://s3.example.invalid'", "endpoint: '"+endpoints[0]+"'", 1)
+			reject(t, s)
+		})
+	}
+}
+
 func TestRevisionCanonical(t *testing.T) {
 	a := accepted(t, active(t))
 	b := accepted(t, strings.Replace(active(t), "daily: '02:30'", "cron: '30 2 * * *'", 1))
