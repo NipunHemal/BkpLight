@@ -1,6 +1,10 @@
 # Session handoff
 
-**Document status:** M01 execution authorized in subagent mode; blocked on entry prerequisites, 2026-10-25.
+**Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
+
+## M01 execution resumed - 2026-10-25
+
+The user's "ok can you use wsl" approved the native Linux test workspace and M01-only synthetic fixtures in response to the prior combined question. M00 production inventory remains incomplete. Existing H2 plan/subagent approval stands. The managed worktree is the source/Git authority; private `/tmp/bkplight-m01.AkBD2Z` is the native Linux test snapshot. Resync before each run. Fresh Go 1.26.10/GCC and file-hash checks passed; the Superpowers skill is available. The ignored SDD ledger has the required plan conflict scan. T01 is ready; no application tests or implementation have run yet. Earlier blocked sections below are historical.
 
 ## WSL execution choice confirmed - 2026-10-25
 

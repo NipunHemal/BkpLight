@@ -11,7 +11,7 @@ Define milestone entry criteria, work packages, deliverables and measurable exit
 | ID | Priority | Owner / reviewer | Status | Completion evidence |
 |---|---|---|---|---|
 | M00 | P0 | TODO: planning owner / operator | backlog | Not produced |
-| M01 | P0 | Controller / task subagents when unblocked | blocked | [Detailed plan v0.1](implementation-plans/2026-10-24-m01-secure-service-foundation.md); H2 subagent mode granted 2026-10-25; Linux tooling/fixture prerequisites unresolved; runtime checks not run |
+| M01 | P0 | Controller / task subagents | in_progress | [Detailed plan v0.1](implementation-plans/2026-10-24-m01-secure-service-foundation.md); H2 and M01-only synthetic fixture disposition recorded 2026-10-25; T01 ready, runtime checks not run |
 | M02 | P0 | TODO: database owner / reviewer | backlog | Not run |
 | M03 | P0 | TODO: storage owner / reviewer | backlog | Not run |
 | M04 | P0 | TODO: recovery owner / reviewer | backlog | Not run |

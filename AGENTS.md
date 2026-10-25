@@ -1,12 +1,14 @@
 # Agent instructions
 
-**Document status:** Active; H1 held; H2 M01 plan/subagent execution granted, blocked on entry prerequisites; merges and deployment unapproved.
+**Document status:** Active; H1 held; H2 M01 plan/subagent execution granted; M01 synthetic fixture scope and WSL test workspace confirmed; merges and deployment unapproved.
 
 ## Purpose
 
 Guide agents through verified project context, scoped work and evidence-based completion. Documentation templates and conversational proposals are not approved requirements or architecture.
 
 ## Current authorization and approval gates
+
+- Latest disposition (2026-10-25): the user's "ok can you use wsl" answered the request to prepare a native Linux test workspace and proceed with M01 using synthetic fixtures. M01-only fixture execution is approved while M00 production inventory stays incomplete. Ubuntu WSL Go 1.26.10/GCC and a private native snapshot were verified; the official Superpowers skill is available again. T01 may proceed under the existing H2 approval. See the [plan resume record](docs/03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#native-wsl-fixture-disposition---2026-10-25). No H3/H4 approval is implied.
 
 - Latest environment authorization (2026-10-25): the user approved using WSL and installing required tools. Go 1.26.10 and C build tools are installed and smoke-tested. This supersedes earlier installation restrictions for those tools only. Native Linux test arrangement and M01 fixture disposition remain unresolved; see [installation evidence](docs/06-testing/m01-workspace-preflight.md#wsl-tool-installation---2026-10-25). Preserve existing H2 plan/subagent approval.
 

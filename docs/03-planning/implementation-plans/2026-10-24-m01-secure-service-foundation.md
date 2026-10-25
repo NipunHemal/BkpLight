@@ -34,7 +34,11 @@ The first review found five additional input cases worth pinning down. Tests bel
 
 ---
 
-**Document status:** Plan v0.1 approved for subagent execution on 2026-10-25; M01 blocked at entry, T01 blocked and T02-T09 backlog; runtime checks not_run.
+**Document status:** Plan v0.1 approved for subagent execution on 2026-10-25; M01 synthetic fixture entry resolved, T01 ready and T02-T09 backlog; application runtime checks not_run.
+
+## Native WSL fixture disposition - 2026-10-25
+
+The user's "ok can you use wsl" answered the prior request to prepare a native Linux test workspace and proceed with M01 using synthetic fixtures. This is the explicit M01-only fixture disposition; it does not mark M00 production inventory complete or authorize M02 onward. H2 plan and subagent mode remain held. Fresh non-root WSL checks report Go 1.26.10 linux/amd64, CGO enabled and GCC 13.3.0. A native `/tmp/bkplight-m01.AkBD2Z` snapshot was created from the managed worktree, with 49 matching files at initial sync, mode 0700 on its root and 0600 on files. Source/Git authority remains the managed worktree. Resync source into a native snapshot before each test and verify relevant source hashes; use `GOTOOLCHAIN=local TMPDIR=/tmp`. Native `/tmp` permission, socket and flock probes passed previously. The official Superpowers skill is available in this session; the required plan conflict scan and rulings are in the ignored SDD ledger. T01 is ready. Earlier blocked-entry text below is historical.
 
 ## Execution authorization and blocked entry - 2026-10-25
 
@@ -59,11 +63,11 @@ Inspection baseline: clean `main` at `7a5ba9e3020ecc2bd9e3af8687cbdd7183195669`,
 | Gate | Current state | Resolution required before execution |
 |---|---|---|
 | H1 | Held | Use accepted architecture v0.1; material deviations reopen only affected decisions |
-| M00 | Incomplete | Record M00 exit or explicitly approve an M01-only fixture scope, leaving production engine/provider/resource inventory blocked for later milestones |
+| M00 | M01-only synthetic fixture exception recorded 2026-10-25 | M00 production inventory remains incomplete and blocks dependent milestones |
 | H2 | Plan/mode granted 2026-10-25 | Subagent execution approved; unresolved environment and M00 gates still apply |
 | Linux tooling | Installed and smoke-tested 2026-10-25 | Go 1.26.10/GCC 13.3.0 in WSL; race smoke check passes. Native /tmp permission/flock/socket probes pass; Windows-mounted checkout modes fail. Establish native test arrangement; see preflight evidence |
 | Dependency resolution | Not run | Resolve exact pins and go.sum, verify checksums/licenses and bundled SQLite; do not silently upgrade/rewrite pins if unavailable |
-| Workspace | Managed worktree prepared | feature/m01-secure-foundation at the recorded path; Linux execution semantics still unqualified; no merge/push |
+| Workspace | Managed worktree plus native Linux test snapshot | feature/m01-secure-foundation is source/Git authority; `/tmp/bkplight-m01.AkBD2Z` is test snapshot, resynced before runs; no merge/push |
 
 All M01 tests use synthetic fixtures, temporary directories and helper processes. D01/D03/D04/D05 production DB versions, provider accounts and recovery targets are not needed for these fixtures. This does not mark M00 complete or waive the roadmap dependency. D02 Linux target/tooling, D06 contracts/pins and D07 execution mode are the immediate gates. Do not ask for credentials in chat.
 
@@ -104,7 +108,7 @@ Not delivered: dumps/encryption (M02), remote commits/upload (M03), restore (M04
 
 | Task | Deliverable | Dependencies | Status | Commit / runtime evidence |
 |---|---|---|---|---|
-| T01 | Module, shared safe errors and CLI skeleton | Entry gates | blocked | No implementation; tools installed, native test arrangement/fixture disposition unresolved, 2026-10-25 |
+| T01 | Module, shared safe errors and CLI skeleton | Entry gates | ready | M01 synthetic fixture and native WSL test arrangement confirmed 2026-10-25; implementation not_run |
 | T02 | Strict typed configuration and offline validation | T01 | backlog | none / not_run |
 | T03 | Bounded secret-file resolver | T02 | backlog | none / not_run |
 | T04 | Safe rotating structured logs | T01 | backlog | none / not_run |
@@ -278,7 +282,7 @@ func Public(err error) Error {
 }
 ```
 
-`valid(Code,string) bool` is a private T01 helper in error.go: switch over the nine constants, require Field empty or ASCII letters/digits/underscore/dot/brackets up to 128 characters. `Error.Error()` uses this helper and falls back to `internal`. Do not include the original error's message.
+`valid(Code,string) bool` is a private T01 helper in error.go: switch over the eight listed constants, require Field empty or ASCII letters/digits/underscore/dot/brackets up to 128 characters. `Error.Error()` uses this helper and falls back to `internal`. Do not include the original error's message.
 
 - [ ] Add `TestErrorRejectsUnknownCodeAndField`, `TestVersionCommand` and `TestUnknownCommandDoesNotEchoArgs` (pass a synthetic credential-like argument; assert only invalid-command code, exit 2).
 - [ ] Run `go test ./internal/safeerr ./internal/cli -count=1`, `go vet ./internal/safeerr ./internal/cli`, `go build ./cmd/bkplight`; expect exit 0 and no module/source mutation beyond listed files. Build output is ignored by .gitignore.
