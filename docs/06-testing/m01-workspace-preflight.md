@@ -2,6 +2,10 @@
 
 **Document status:** WSL toolchain installed and smoke-tested 2026-10-25; native test arrangement and fixture scope remain unresolved. Earlier preflight evidence is historical.
 
+## Native Linux fixture snapshot - 2026-10-25
+
+The user's WSL confirmation covers the M01 synthetic fixture scope. A private native Linux snapshot at `/home/hemal/.bkplight-m01-fixture-eba7f1c` is owned by the non-root WSL user (mode 0700), persists across WSL invocations and matches the source AGENTS.md SHA-256 at verification. The first `/tmp/bkplight-m01.AkBD2Z` snapshot disappeared between invocations, so it is not used. A plan-specific ignored helper resyncs source from the managed worktree, excludes Git/scratch files, and restores private modes before tests. The managed worktree remains Git/source authority; no application test has run yet. M00 production inventory remains incomplete.
+
 ## WSL execution choice confirmed - 2026-10-25
 
 The user said "ok can you use wsl". Use Ubuntu WSL for M01 commands, retaining the managed worktree as the source/Git authority. Fresh non-root checks report Go 1.26.10 linux/amd64, CGO_ENABLED=1 and GCC 13.3.0. An initial probe used the wrong conventional Go path; the documented `/usr/local/bin/go` resolves correctly to `/opt/bkplight/toolchains/go1.26.10/bin/go`. No reinstall is needed.

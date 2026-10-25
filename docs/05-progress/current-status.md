@@ -4,7 +4,7 @@
 
 ## M01 execution resumed - 2026-10-25
 
-The user's "ok can you use wsl" resolved the M01-only synthetic fixture disposition. The native WSL test snapshot `/tmp/bkplight-m01.AkBD2Z` is private and initially matched all 49 source files; Go 1.26.10 and GCC 13.3.0 were verified again as non-root. The official Superpowers skill is available. M00 production inventory remains incomplete. T01 is ready; no application test result is claimed yet. The [plan](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#native-wsl-fixture-disposition---2026-10-25) and ignored SDD ledger record the entry and preflight scan. Earlier blocked-entry sections below are historical.
+The user's "ok can you use wsl" resolved the M01-only synthetic fixture disposition. The native WSL test snapshot `/home/hemal/.bkplight-m01-fixture-eba7f1c` is private and initially matched all 49 source files; Go 1.26.10 and GCC 13.3.0 were verified again as non-root. The official Superpowers skill is available. M00 production inventory remains incomplete. T01 is ready; no application test result is claimed yet. The [plan](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#native-wsl-fixture-disposition---2026-10-25) and ignored SDD ledger record the entry and preflight scan. Earlier blocked-entry sections below are historical.
 
 ## WSL execution choice confirmed - 2026-10-25
 
