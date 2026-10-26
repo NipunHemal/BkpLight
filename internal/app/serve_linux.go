@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -83,10 +84,19 @@ func Serve(parent context.Context, configPath string) (result error) {
 	b := &backend{store: store, logs: logs, lastProbe: time.Now(), stateOK: true}
 	b.ready.Store(true)
 	defer b.ready.Store(false)
-	if err = removeStaleSocket(c.Service.SocketPath); err != nil {
+	runtime, err := claimRuntimeSocket(c.Service.SocketPath)
+	if err != nil {
 		return err
 	}
-	server, err := control.Listen(c.Service.SocketPath, b)
+	// The runtime claim spans recovery, bind, serving and Server.Close. State's
+	// singleton is acquired first and still released last; different state dirs
+	// do not permit two daemons to recover or clean up the same socket at once.
+	defer func() {
+		if err := runtime.Close(); result == nil {
+			result = err
+		}
+	}()
+	server, err := runtime.Listen(b)
 	if err != nil {
 		return err
 	}
@@ -224,13 +234,105 @@ func openRuntimeParent(path string) (*os.File, error) {
 	}
 	return f, nil
 }
-func removeStaleSocket(path string) error {
+
+type runtimeSocket struct {
+	parent   *os.File
+	lock     *os.File
+	path     string
+	once     sync.Once
+	closeErr error
+}
+
+func claimRuntimeSocket(path string) (_ *runtimeSocket, err error) {
 	parent, err := openRuntimeParent(filepath.Dir(path))
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer parent.Close()
-	owned := fmt.Sprintf("/proc/self/fd/%d/%s", parent.Fd(), filepath.Base(path))
+	r := &runtimeSocket{parent: parent, path: path}
+	defer func() {
+		if err != nil {
+			r.Close()
+		}
+	}()
+	name := "." + filepath.Base(path) + ".lock"
+	fd, err := syscall.Openat(int(parent.Fd()), name, syscall.O_CREAT|syscall.O_RDWR|syscall.O_NOFOLLOW|syscall.O_CLOEXEC|syscall.O_NONBLOCK, 0600)
+	if err != nil {
+		return nil, unavailable()
+	}
+	r.lock = os.NewFile(uintptr(fd), name)
+	info, err := r.lock.Stat()
+	if err != nil {
+		return nil, unavailable()
+	}
+	st, ok := info.Sys().(*syscall.Stat_t)
+	if !ok || !info.Mode().IsRegular() || info.Mode().Perm() != 0600 || st.Uid != uint32(os.Geteuid()) || st.Nlink != 1 {
+		return nil, &safeerr.Error{Code: safeerr.Denied}
+	}
+	if err = syscall.Flock(fd, syscall.LOCK_EX|syscall.LOCK_NB); err != nil {
+		if errors.Is(err, syscall.EWOULDBLOCK) {
+			return nil, &safeerr.Error{Code: safeerr.Conflict}
+		}
+		return nil, unavailable()
+	}
+	// A cooperating daemon never unlinks the lock, including on shutdown. Bind
+	// this acquisition to the still-present inode before trusting ownership.
+	current, err := os.Lstat(fmt.Sprintf("/proc/self/fd/%d/%s", parent.Fd(), name))
+	if err != nil || !os.SameFile(info, current) {
+		return nil, unavailable()
+	}
+	return r, nil
+}
+func (r *runtimeSocket) Close() error {
+	r.once.Do(func() {
+		if r.lock != nil {
+			if r.lock.Close() != nil {
+				r.closeErr = unavailable()
+			}
+		}
+		if r.parent.Close() != nil {
+			r.closeErr = unavailable()
+		}
+	})
+	return r.closeErr
+}
+func (r *runtimeSocket) ownedPath() string {
+	return fmt.Sprintf("/proc/self/fd/%d/%s", r.parent.Fd(), filepath.Base(r.path))
+}
+func (r *runtimeSocket) parentMatches() bool {
+	held, err := r.parent.Stat()
+	if err != nil {
+		return false
+	}
+	current, err := os.Stat(filepath.Dir(r.path))
+	return err == nil && os.SameFile(held, current)
+}
+func (r *runtimeSocket) Listen(b control.Backend) (*control.Server, error) {
+	if !r.parentMatches() {
+		return nil, unavailable()
+	}
+	if err := r.removeStale(); err != nil {
+		return nil, err
+	}
+	server, err := control.Listen(r.path, b)
+	if err != nil {
+		return nil, err
+	}
+	// Control keeps its own rooted directory handle. Before serving, confirm
+	// its socket appeared in our claimed directory and the configured parent
+	// still names that directory. A replacement aborts and closes that server.
+	held, e1 := os.Lstat(r.ownedPath())
+	current, e2 := os.Lstat(r.path)
+	if e1 != nil || e2 != nil || !r.parentMatches() || !os.SameFile(held, current) {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		server.Close(ctx)
+		return nil, unavailable()
+	}
+	return server, nil
+}
+
+func (r *runtimeSocket) removeStale() error {
+	owned := r.ownedPath()
 	info, err := os.Lstat(owned)
 	if os.IsNotExist(err) {
 		return nil

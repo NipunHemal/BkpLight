@@ -4,6 +4,8 @@
 
 ## T09 composition candidate in review - 2026-10-26
 
+Review fix round 1 addresses the Important concurrent stale-socket recovery race using a persistent private per-socket runtime flock held from before recovery until after listener close, alongside retained rooted directory identity. Deterministic competing-claim and real competing-daemon tests, full native tests and covering race checks pass; [fix evidence](../06-testing/m01-foundation-evidence.md#t09-independent-review-fix-round-1---2026-10-26) records results. T09 remains in_review pending scoped independent re-review. The coalescing-test Minor joins the T08 socket-length Minor for whole-branch review.
+
 The foundation daemon now composes validated config/active secrets, singleton SQLite, safe logs, recovery, config activation, readiness and Unix control, with orderly signal shutdown and owned-resource release. T09 is **in_review**, pending independent task/whole-branch review; T01-T08 remain done. Native internal/race suites, config fuzz, real-binary integration, optional isolated-network integration, vet and module verification passed; exact results and remaining final checks are in [foundation evidence](../06-testing/m01-foundation-evidence.md). The [development instructions](../03-planning/development-environment.md) describe the qualified Linux fixture workspace. Health is foundation-only; no worker/provider/sender starts. The narrow fixed `service.health_checked` log-code extension was explicitly ruled necessary by the controller for idle-sink readiness probing. M00 inventory remains incomplete; integration/release not_started and H3/H4 absent.
 
 ## T08 reviewed Unix control API - 2026-10-26

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -14,6 +15,7 @@ import (
 	"time"
 
 	"bkplight.local/bkplight/internal/config"
+	"bkplight.local/bkplight/internal/control"
 	"bkplight.local/bkplight/internal/observability"
 	"bkplight.local/bkplight/internal/process"
 	"bkplight.local/bkplight/internal/safeerr"
@@ -36,6 +38,205 @@ func TestInvalidConfigCreatesNoState(t *testing.T) {
 	}
 	if len(entries) != 1 {
 		t.Fatal("invalid startup mutated filesystem")
+	}
+}
+
+func TestConcurrentStaleRecoveryKeepsWinnerListener(t *testing.T) {
+	dir, err := os.MkdirTemp("/tmp", "bkl-claim-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.RemoveAll(dir) })
+	path := filepath.Join(dir, "c.sock")
+	stale, err := net.ListenUnix("unix", &net.UnixAddr{Name: path, Net: "unix"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	stale.SetUnlinkOnClose(false)
+	if err = stale.Close(); err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.Lstat(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	winner, err := claimRuntimeSocket(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	winnerClosed := false
+	t.Cleanup(func() {
+		if !winnerClosed {
+			winner.Close()
+		}
+	})
+	// Pause the first startup after its claim, before recovery or bind. The
+	// competing startup must lose even though the existing inode is still stale.
+	blocked := make(chan error, 1)
+	go func() {
+		loser, err := claimRuntimeSocket(path)
+		if loser != nil {
+			loser.Close()
+		}
+		blocked <- err
+	}()
+	select {
+	case err = <-blocked:
+		if err == nil || safeerr.Public(err).Code != safeerr.Conflict {
+			t.Fatal("second claimant acquired stale socket before winner bound", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("runtime claim should fail without blocking")
+	}
+	after, err := os.Lstat(path)
+	if err != nil || !os.SameFile(before, after) {
+		t.Fatal("loser removed stale inode", err)
+	}
+	b, _ := backendFixture(t)
+	server, err := winner.Listen(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	served := make(chan error, 1)
+	go func() { served <- server.Serve() }()
+	serverClosed := false
+	serveJoined := false
+	t.Cleanup(func() {
+		if !serverClosed {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			server.Close(ctx)
+		}
+		if !serveJoined {
+			select {
+			case <-served:
+			case <-time.After(time.Second):
+				t.Error("winner server not joined")
+			}
+		}
+	})
+	if _, err = control.NewClient(path).Do(context.Background(), "GET", "/v1/health", nil); err != nil {
+		t.Fatal("winner listener unavailable", err)
+	}
+	if loser, err := claimRuntimeSocket(path); err == nil {
+		loser.Close()
+		t.Fatal("live winner lost runtime ownership")
+	}
+	if _, err = control.NewClient(path).Do(context.Background(), "GET", "/v1/health", nil); err != nil {
+		t.Fatal("loser unlinked winner", err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	if err = server.Close(ctx); err != nil {
+		t.Fatal(err)
+	}
+	err = <-served
+	serveJoined = true
+	if err != nil {
+		t.Fatal(err)
+	}
+	serverClosed = true
+	// Ownership lasts beyond socket cleanup until the daemon releases its claim.
+	if loser, err := claimRuntimeSocket(path); err == nil {
+		loser.Close()
+		t.Fatal("runtime ownership released before owner close")
+	}
+	if err = winner.Close(); err != nil {
+		t.Fatal(err)
+	}
+	winnerClosed = true
+	next, err := claimRuntimeSocket(path)
+	if err != nil {
+		t.Fatal("next startup cannot claim released runtime", err)
+	}
+	if err = next.Close(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestRuntimeClaimRejectsUnsafeLock(t *testing.T) {
+	for _, kind := range []string{"symlink", "hardlink", "public_mode"} {
+		t.Run(kind, func(t *testing.T) {
+			dir := t.TempDir()
+			if err := os.Chmod(dir, 0700); err != nil {
+				t.Fatal(err)
+			}
+			path := filepath.Join(dir, "c.sock")
+			lock := filepath.Join(dir, ".c.sock.lock")
+			target := filepath.Join(dir, "preserve")
+			if err := os.WriteFile(target, []byte("synthetic-preserved"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			var err error
+			switch kind {
+			case "symlink":
+				err = os.Symlink(target, lock)
+			case "hardlink":
+				err = os.Link(target, lock)
+			case "public_mode":
+				err = os.WriteFile(lock, []byte("preserve"), 0644)
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			before, err := os.Lstat(lock)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if claim, err := claimRuntimeSocket(path); err == nil {
+				claim.Close()
+				t.Fatal("unsafe lock accepted")
+			}
+			after, err := os.Lstat(lock)
+			if err != nil || !os.SameFile(before, after) || after.Mode() != before.Mode() {
+				t.Fatal("unsafe lock changed", err)
+			}
+			raw, err := os.ReadFile(target)
+			if err != nil || string(raw) != "synthetic-preserved" {
+				t.Fatal("lock target changed", err)
+			}
+		})
+	}
+}
+
+func TestRuntimeClaimRejectsParentReplacement(t *testing.T) {
+	dir, err := os.MkdirTemp("/tmp", "bkl-root-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.RemoveAll(dir) })
+	parent := filepath.Join(dir, "run")
+	if err = os.Mkdir(parent, 0700); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(parent, "c.sock")
+	claim, err := claimRuntimeSocket(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer claim.Close()
+	moved := filepath.Join(dir, "held")
+	if err = os.Rename(parent, moved); err != nil {
+		t.Fatal(err)
+	}
+	if err = os.Mkdir(parent, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err = os.WriteFile(path, []byte("preserve-new-tree"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	b, _ := backendFixture(t)
+	if server, err := claim.Listen(b); err == nil {
+		server.Close(context.Background())
+		t.Fatal("replacement parent accepted")
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil || string(raw) != "preserve-new-tree" {
+		t.Fatal("replacement tree mutated", err)
+	}
+	if other, err := claimRuntimeSocket(filepath.Join(moved, "c.sock")); err == nil {
+		other.Close()
+		t.Fatal("claim detached from held directory")
 	}
 }
 

@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -321,6 +322,61 @@ func TestStaleSocketSafety(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestConcurrentDaemonsRecoverStaleSocket(t *testing.T) {
+	first := newFixture(t, false)
+	second := newFixture(t, false)
+	second.c.Service.SocketPath = first.socket
+	second.socket = first.socket
+	second.write(t)
+	if err := os.Mkdir(filepath.Dir(first.socket), 0700); err != nil {
+		t.Fatal(err)
+	}
+	stale, err := net.ListenUnix("unix", &net.UnixAddr{Name: first.socket, Net: "unix"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	stale.SetUnlinkOnClose(false)
+	if err = stale.Close(); err != nil {
+		t.Fatal(err)
+	}
+	d1 := launch(t, first)
+	d2 := launch(t, second)
+	var winner *daemon
+	var winnerConfig, loserConfig *fixture
+	select {
+	case err = <-d1.done:
+		d1.waited = true
+		winner = d2
+		winnerConfig = second
+		loserConfig = first
+	case err = <-d2.done:
+		d2.waited = true
+		winner = d1
+		winnerConfig = first
+		loserConfig = second
+	case <-time.After(8 * time.Second):
+		t.Fatal("same-socket loser did not exit")
+	}
+	if err == nil {
+		t.Fatal("losing startup reported success")
+	}
+	waitReady(t, winnerConfig, winner)
+	request(t, winnerConfig, "GET", "/v1/health", nil)
+	_ = winner.cmd.Process.Signal(syscall.SIGTERM)
+	winner.wait(t, true)
+	if _, err = os.Lstat(first.socket); !os.IsNotExist(err) {
+		t.Fatal("winner socket retained", err)
+	}
+	lock := filepath.Join(filepath.Dir(first.socket), "."+filepath.Base(first.socket)+".lock")
+	if fi, err := os.Lstat(lock); err != nil || !fi.Mode().IsRegular() || fi.Mode().Perm() != 0600 {
+		t.Fatal("private persistent runtime lock missing", fi, err)
+	}
+	next := launch(t, loserConfig)
+	waitReady(t, loserConfig, next)
+	_ = next.cmd.Process.Signal(syscall.SIGTERM)
+	next.wait(t, true)
 }
 func TestHealthDegradesOnStateWriteFailure(t *testing.T) {
 	f := newFixture(t, false)

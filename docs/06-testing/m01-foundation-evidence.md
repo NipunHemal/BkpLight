@@ -60,6 +60,24 @@ Self-review found that a resolved secret-root alias to `/` was not covered by th
 
 The exact staged name/stat/full-diff, secrets and whitespace review is recorded in the ignored task report before commit. Review fixes require fresh affected verification and a subsequent evidence entry; these results do not establish independent review approval.
 
+## T09 independent review fix round 1 - 2026-10-26
+
+Review identified an Important cross-state startup race: final stale-inode checking and removal were separate, so two daemons could validate one stale socket and a delayed removal could unlink the other's newly bound listener. Separate SQLite state locks did not serialize that path. The fix adds a private, same-parent `.<socket-name>.lock` inode with nonblocking flock, owned mode 0600, regular-file/single-link/no-symlink checks and an inode identity check after acquisition. The file is never unlinked. The held runtime parent and claim span stale recovery, bind, serving and `control.Server.Close`; state ownership is still acquired first and released last. Stale operations remain descriptor-relative. Startup verifies the configured parent and the created socket match the held runtime directory before serving; replacement aborts safely. No T08 control-package contract changed.
+
+Deterministic RED: `go test ./internal/app -run TestConcurrentStaleRecoveryKeepsWinnerListener -count=1 -v` failed `second claimant acquired stale socket before winner bound <nil>` before the lock was implemented. GREEN passed 0.038s. The test pauses the winning claim before stale recovery/bind, attempts a concurrent claim, proves the stale inode is preserved, binds/requests the winner, repeats a losing claim without losing liveness, verifies the claim survives socket cleanup, then proves the next startup can acquire it after owner close. Additional app tests reject symlink/hardlink/public-mode lock files without altering them and reject a replaced runtime parent. `TestConcurrentDaemonsRecoverStaleSocket` starts two real binaries with separate state directories and a shared stale socket; exactly one wins, stays reachable, shuts down and leaves a private reusable lock inode; the loser configuration can start afterward.
+
+| Fix verification command | Observed result |
+|---|---|
+| `go test ./internal/app ./tests/integration -run 'TestConcurrent\|TestRuntimeClaim\|TestStaleSocketSafety\|TestFoundationLifecycle' -count=1 -timeout 60s -v` | PASS: deterministic ownership, unsafe-lock subtests, parent replacement, lifecycle/stale-safety and actual competing daemons; app 0.060s, integration 0.883s. The command used regex alternation without backslash escaping in the shell |
+| `go test ./... -count=1 -timeout 120s` | PASS all internal packages/integration; app 0.262s, control 7.086s, state 2.748s, integration 4.344s |
+| `CGO_ENABLED=1 go test -race ./internal/app ./tests/integration -count=1 -timeout 120s` | PASS: app 1.325s, integration 5.276s; no race reports |
+| `go test ./internal/app ./tests/integration -run TestConcurrent -count=20 -timeout 60s` | PASS: app 0.495s, integration 1.803s; 20 repetitions of each concurrent regression |
+| `go vet ./...`, `go build -trimpath -o bin/bkplight ./cmd/bkplight` | PASS, no output |
+| Isolated-network integration command recorded above | PASS 4.238s after the runtime ownership fix |
+| `gofmt -l cmd internal tests`, `git diff --check` | Empty output |
+
+All fix commands ran in the same non-root native WSL snapshot, with the approved source sync before each Go command. Scoped re-review remains pending. The reviewer's separate Minor coalescing-test weakness is deferred to final whole-branch review along with the existing T08 rooted-path-length Minor; this fix round addresses the Important runtime ownership race.
+
 ## Acceptance mapping
 
 | Criteria | Evidence |
