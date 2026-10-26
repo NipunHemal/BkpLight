@@ -1,20 +1,20 @@
 # M01 foundation fixture evidence
 
-**Status:** T09 in_review, 2026-10-26. T01-T08 independently reviewed; T09 and whole-branch independent review remain pending. Integration/release not_started; H3/H4 absent.
+**Status:** M01 T01-T09 done on the isolated feature branch, 2026-10-26. Whole-branch review and one scoped fix re-review closed. Integration/release not_started; H3/H4 absent.
 
-Candidate: `feature/m01-secure-foundation`, managed worktree `C:\Users\USER\.codex\worktrees\m01-secure-foundation\BkpLight`, T09 based on `50dd7b7bf5dda147948867ccd3310c300b09c2ed`. The task commit is discoverable as `feat(app): compose secure service foundation`; its actual hash must be recorded in subsequent bookkeeping, because this evidence is part of that commit. The [authoritative task register](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order) records exact earlier task/fix hashes and review outcomes.
+Candidate: `feature/m01-secure-foundation`, managed worktree `C:\Users\USER\.codex\worktrees\m01-secure-foundation\BkpLight`. T09 implementation `07635a2ce01e0e71caa75cb9134a49f14baa31f2`, task-review fix `dd8fae9b102994092d14a6aa2a352ab63c927b64`, whole-branch review fix `02e84c3b267a534bb6e74bcbd1fab6bd51730b94`. The [task register](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order) records earlier task/fix hashes.
 
-| Task | Implementation and reviewed fixes | State entering T09 review |
+| Task | Implementation and reviewed fixes | Final state |
 |---|---|---|
 | T01 | `99248f5` | done |
 | T02 | `18a2e4c`, `6975a64` | done |
 | T03 | `26500db` | done |
-| T04 | `1b04bc0`, `14e653a` | done; narrow T09 diagnostic extension pending review |
+| T04 | `1b04bc0`, `14e653a` | done; T09 diagnostic extension reviewed |
 | T05 | `16bcdfc`, `e8a49c1` | done |
 | T06 | `072cd38` | done |
 | T07 | `3f6e7cd` | done |
-| T08 | `c4e89f0`, `0430582` | done; Minor rooted socket path-length case deferred to whole-branch review |
-| T09 | Current task tree, commit subject above | in_review |
+| T08 | `c4e89f0`, `0430582` | done; final-review path-length fix in `02e84c3` |
+| T09 | `07635a2`, `dd8fae9`, `02e84c3` | done; independent task, whole-branch and fix re-review closed |
 
 ## Scope and execution rulings
 
@@ -88,11 +88,11 @@ All fix commands ran in the same non-root native WSL snapshot, with the approved
 | AC07 logs, AC09 truthful readiness | Existing rotation tests and fixed-code regression; real binary `TestHealthDegradesOnStateWriteFailure`, `TestHealthDegradesOnLogFailure`, `TestHealthProbeCoalescesConcurrentRequests`; degraded cancel creates no command row |
 | AC08 process supervision, AC11 shutdown/recovery | Existing process/state unit/race fixtures; app helper cancellation/PID absence; real binary SIGINT/SIGTERM cleanup, crash lock release, stale socket safety and `TestCrashRecoveryDoesNotReplayEffects` |
 | AC10 no implicit delivery | Existing state routing/outbox tests; `TestNoNotificationsWithoutChannels`, recovery verifies zero delivery rows; `TestUnsupportedCommandsNoMutations` verifies no runs/events/deliveries/commands |
-| AC12 reproducibility | Recorded native tests, fuzz, race, vet/build/module verification, example validation and development instructions; final independent review still required |
+| AC12 reproducibility | Recorded native tests, fuzz, race, vet/build/module verification, example validation and development instructions; whole-branch and scoped fix re-review closed |
 
 ## Limits
 
-Synthetic fixtures establish foundation behavior only. No database dump, encrypted archive, provider request, webhook send, restore, scheduled backup, retention execution, Docker image, CI or production release was run or implemented. The integration suite builds a normal daemon binary; internal package race tests exercise the app/state/control implementations with race instrumentation. Network-namespace execution demonstrates these fixtures work without external networking, not a production egress policy or proof against every future code path. Startup probes and periodic requested-health probes are not a backup-protection guarantee. M00 deployment inventory, database/tool/provider qualification and business acceptance remain open. No merge, push or deployment is approved. T09 independent review and the previously deferred T08 Minor long rooted-bind path case remain with the controller.
+Synthetic fixtures establish foundation behavior only. No database dump, encrypted archive, provider request, webhook send, restore, scheduled backup, retention execution, Docker image, CI or production release was run or implemented. The integration suite builds a normal daemon binary; internal package race tests exercise the app/state/control implementations with race instrumentation. Network-namespace execution demonstrates these fixtures work without external networking, not a production egress policy or proof against every future code path. Startup probes and periodic requested-health probes are not a backup-protection guarantee. M00 deployment inventory, database/tool/provider qualification and business acceptance remain open. No merge, push or deployment is approved.
 
 
 ## Final whole-branch review fix wave - 2026-10-26
@@ -115,4 +115,12 @@ All commands below ran in the private non-root native WSL fixture snapshot with 
 | `go vet ./...` | PASS, empty output |
 | `go build ./cmd/bkplight` | PASS, empty output |
 
-Fixture corrections are preserved in the ignored final-fix report: the initial ancestor swap happened before validation rather than at mkdir; an initial app temporary parent was too long to guarantee actual rooted-path overflow. Both were corrected and behavioral RED was directly observed before final verification. These results establish fixture behavior, not production inventory, independent review approval, integration or release readiness. Scoped independent re-review remains pending; H3/H4 are absent.
+Fixture corrections are preserved in the ignored final-fix report: the initial ancestor swap happened before validation rather than at mkdir; an initial app temporary parent was too long to guarantee actual rooted-path overflow. Both were corrected and behavioral RED was directly observed before final verification. These results establish fixture behavior, not production inventory, integration or release readiness. The scoped independent re-review closed all three findings with no new breakage; H3/H4 are absent.
+
+## Final review and controller verification - 2026-10-26
+
+Whole-branch review covered base `7a5ba9e3020ecc2bd9e3af8687cbdd7183195669` through `dd8fae9b102994092d14a6aa2a352ab63c927b64` and found the log-directory ancestor race (Important) plus two deferred Minor cases. One fix wave committed `02e84c3b267a534bb6e74bcbd1fab6bd51730b94`; one scoped independent re-review verified all three addressed, no new Critical/Important breakage and no out-of-scope observation. The reviewer did not rerun suites. The initial attempted whole-branch reviewer hit a usage limit before returning findings; a second available reviewer completed the review.
+
+The controller reran commands on the committed fix in the private native WSL snapshot, syncing before each Go command. `go test ./... -count=1 -timeout 120s` passed all nine internal packages and the actual-binary integration package. `CGO_ENABLED=1 go test -race ./... -count=1 -timeout 180s` passed all nine plus integration with no race reports. `go mod verify` reported `all modules verified`; `go list -m all` retained the reviewed direct pins (yaml v3.0.5, cron v3.0.1, SQLite v1.61.0). `go vet ./...` and `go build -trimpath -o bin/bkplight ./cmd/bkplight` passed. Rebuilding and immediately running `./bin/bkplight version` returned `bkplight dev`; example config validation returned `valid 6b2ffc6559840bb121e6f1c69b3dabe49a0deebb46acb87969539292b4583b9c`. One initial version check failed because a later source sync removed ignored `bin/bkplight`; rebuilding and running both binary checks before another sync resolved the verification workflow issue, with no source change. Bounded `FuzzDecode` passed after 27,392 executions and 43 new interesting inputs. Network-isolated integration passed in an unprivileged WSL namespace. `gofmt -l cmd internal tests` was empty.
+
+These results verify the M01 synthetic Linux foundation. They do not establish production readiness, actual database backup/recovery, or H3/H4 authorization.

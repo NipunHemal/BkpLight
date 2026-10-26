@@ -1,6 +1,10 @@
 # Current status
 
-**Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
+**Document status:** M01 T01-T09 done on the isolated feature branch; integration/release not_started, 2026-10-26.
+
+## M01 foundation verified on feature branch - 2026-10-26
+
+T01-T09 are done on `feature/m01-secure-foundation`. T09 implementation `07635a2`, task-review fix `dd8fae9` and whole-branch-review fix `02e84c3` have independent review closure; the final scoped re-review closed all three whole-branch findings. Fresh controller-run native WSL full tests, full race suite, fuzz, module verification, vet, build, example validation and isolated-network integration passed; exact evidence and limits are in [M01 foundation evidence](../06-testing/m01-foundation-evidence.md#final-review-and-controller-verification---2026-10-26). The preceding in_review sections record historical transitions, not the current state. M00 production inventory remains incomplete; integration/release not_started. H3 merge/push and H4 deployment are unapproved. No real backup, restore, storage or notification execution exists in M01.
 
 ## Final whole-branch review fixes prepared - 2026-10-26
 

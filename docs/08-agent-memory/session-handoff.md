@@ -1,6 +1,12 @@
 # Session handoff
 
-**Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
+**Document status:** M01 T01-T09 done on isolated feature branch; integration/release not_started, 2026-10-26.
+
+## Current M01 handoff - 2026-10-26
+
+Branch `feature/m01-secure-foundation` in managed worktree `C:/Users/USER/.codex/worktrees/m01-secure-foundation/BkpLight`. T01-T09 are done; T09 implementation `07635a2`, task-review fix `dd8fae9`, whole-branch fix `02e84c3`. Independent whole-branch review found one Important and two Minor findings; the one fix wave and scoped re-review closed all three without new breakage. The controller reran full native WSL tests/race, fuzz, module verification, vet/build/example and isolated-network integration; see [final evidence](../06-testing/m01-foundation-evidence.md#final-review-and-controller-verification---2026-10-26). The prior in_review sections below are retained history.
+
+The M01 foundation exposes only local Unix control and truthful not_implemented backup/scheduler status. M00 production inventory, database/provider qualification and actual backup/restore remain open. Integration/release not_started; H3 for chosen integration action/destination and H4 for exact deployment remain unapproved. Next permitted action: present the verified branch for human integration choice; preserve this worktree and branch until that choice. Do not merge, push, deploy or run production backup operations under the existing authorization.
 
 ## Final whole-branch review fixes handoff - 2026-10-26
 
