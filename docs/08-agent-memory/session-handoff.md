@@ -2,6 +2,10 @@
 
 **Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
 
+## T08 reviewed local control and T09 handoff - 2026-10-26
+
+T08 is complete in `c4e89f07aa169cc55ebaec0f597e8c112ad59c27` and `04305822842c6515e505a3c4a642c8690a206125`. Native WSL control/CLI tests, race/full suite, vet/build and real Unix timeout regression passed per the ignored report; scoped independent re-review closed both Important findings. [Plan status](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order): T01-T08 done, T09 in progress. T09 must supply the production Backend, preserve scope `foundation` and unsupported backup/scheduler status, and use short private socket fixture paths. Final whole-branch review must triage the deferred Minor rooted-bind path-length edge case. M00 production inventory remains incomplete; no merge/deployment approval.
+
 ## T07 reviewed process supervisor and T08 handoff - 2026-10-25
 
 T07 is complete in `3f6e7cd8084de6121778c2e33afe9119c574af6f` with clean independent review. Native WSL process helpers verified cancellation, output failure, stderr bounds, explicit environment, process-group signalling and PID cleanup; race/full suite, vet/build passed per the ignored task report. [Plan status](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order): T01-T07 done, T08 in progress, T09 backlog. T08 owns local Unix control API/CLI only; it must preserve the no-public-TCP and no-actual-backup boundary. Later process callers must supply a returning/cancellation-aware stdout writer. M00 production inventory remains incomplete; no merge/deployment approval.

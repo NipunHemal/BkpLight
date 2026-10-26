@@ -115,8 +115,8 @@ Not delivered: dumps/encryption (M02), remote commits/upload (M03), restore (M04
 | T05 | Singleton SQLite ownership and migrations | T01 | done | `16bcdfc000ecf118dca34fec875e1a47a121dfdd`, fix `e8a49c1a8444c76018790bb4c5b89054995832d0`; native WSL 21 state tests, race/full suite, vet/build/module verify, SQLite 3.54.1; two review findings fixed and scoped re-review PASS |
 | T06 | Config revisions, idempotent run state and outbox | T02, T05 | done | `072cd38ab2d725f4229b0fb02c033cbfa50f9206`; native WSL 25 new tests, state race/full suite, vet/build; independent spec and quality review approved, no findings |
 | T07 | Linux native-process supervisor | T01 | done | `3f6e7cd8084de6121778c2e33afe9119c574af6f`; native WSL focused/race/full suite, vet/build and PID/ESRCH evidence; independent spec and quality review approved, no findings |
-| T08 | Local HTTP contracts and CLI client | T02, T06 | in_progress | T02/T06 reviewed; implementer dispatch pending from `3f6e7cd8084de6121778c2e33afe9119c574af6f` |
-| T09 | Daemon composition, health/shutdown and acceptance harness | T03, T04, T05, T06, T07, T08 | backlog | none / not_run |
+| T08 | Local HTTP contracts and CLI client | T02, T06 | done | `c4e89f07aa169cc55ebaec0f597e8c112ad59c27`, fix `04305822842c6515e505a3c4a642c8690a206125`; native WSL focused/race/full suite, vet/build; two Important review findings fixed; one Minor path-length item deferred to whole-branch review |
+| T09 | Daemon composition, health/shutdown and acceptance harness | T03, T04, T05, T06, T07, T08 | in_progress | T03-T08 reviewed; implementer dispatch pending from `04305822842c6515e505a3c4a642c8690a206125` |
 
 Execute serially T01-T09 unless H2 selects parallel mode and assigns disjoint file ownership. T01 owns shared errors, T02 owns config, T05/T06 own schema/store; consumers cannot silently change them. The record above is authoritative for task status. After each real commit record its hash/evidence in the task record using the Git bookkeeping policy. Integration/release state: not_started. Implementation owner/reviewer: unassigned until H2; no invented staffing.
 
@@ -664,7 +664,7 @@ Use a documented 1-second pipe-drain deadline after termination; broken pipe/std
 
 Wire envelope: `{request_id,status,data}` or `{request_id,status,error:{code,message,retryable}}`; message comes from a fixed code dictionary. Operation response adds `operation_id`; no raw config, paths, arbitrary SQL or argument echo. HTTP mapping: invalid 400, denied403, not_found404, conflict409, busy429, unavailable503, not_implemented501, internal500. Accepted operations later use202. GET health returns200 when ready,503 when not; data remains parseable. CLI exits 0 success,2 invalid input,3 unavailable/operational failure,4 unsupported. No caller can submit an arbitrary transition or command.
 
-- [ ] Write handler tests using `httptest.NewRecorder` with an unexported handler constructor in package control; use Unix socket integration in server_linux_test.go. Fake Backend is a complete test struct implementing the six interface methods with fixed fields. Write:
+- [x] Write handler tests using `httptest.NewRecorder` with an unexported handler constructor in package control; use Unix socket integration in server_linux_test.go. Fake Backend is a complete test struct implementing the six interface methods with fixed fields. Write:
 
 ```go
 func TestServerUsesUnixSocket(t *testing.T) {
@@ -679,10 +679,10 @@ func TestServerUsesUnixSocket(t *testing.T) {
 }
 ```
 
-- [ ] Run `go test ./internal/control -run TestServerUsesUnixSocket -count=1 -v`; observe RED.
-- [ ] Implement net.ListenUnix with 0700 parent, 0600 socket and http.Server bounds. Existing regular/symlink/socket path causes conflict; never blindly unlink an arbitrary existing socket. T09 handles proved-owned stale sockets only while holding the state lock. On close, remove only the socket inode this Server created. Client uses Unix DialContext, fixed dummy HTTP host, Proxy nil, timeout5s and bounded response reads; all non-Unix schemes/paths rejected. No net.Listen("tcp") code path.
-- [ ] Strictly decode JSON with duplicate-key token validation, DisallowUnknownFields, body limit and EOF check; validate request IDs and paths; return fixed safe errors. Implement private `decodeCancel(io.Reader) (string,error)` in server_linux.go: one object containing exactly one string request_id; reject repeated keys, nested values, unknown fields, trailing JSON and invalid IDs. Limit concurrent handlers to32; reject excess as busy. Handler context deadline5s. No hidden streaming/event endpoint.
-- [ ] Add this Review Focus test (strings import); decoding fails before any Backend call:
+- [x] Run `go test ./internal/control -run TestServerUsesUnixSocket -count=1 -v`; observe RED. The initial missing-API RED was reported by an interrupted implementer without a saved transcript; the replacement implementer directly verified health and socket-safety behavioral RED/GREEN regressions.
+- [x] Implement net.ListenUnix with 0700 parent, 0600 socket and http.Server bounds. Existing regular/symlink/socket path causes conflict; never blindly unlink an arbitrary existing socket. T09 handles proved-owned stale sockets only while holding the state lock. On close, remove only the socket inode this Server created. Client uses Unix DialContext, fixed dummy HTTP host, Proxy nil, timeout5s and bounded response reads; all non-Unix schemes/paths rejected. No net.Listen("tcp") code path. Fix `0430582` preserves existing parent modes and adds response-write grace beyond the five-second handler deadline.
+- [x] Strictly decode JSON with duplicate-key token validation, DisallowUnknownFields, body limit and EOF check; validate request IDs and paths; return fixed safe errors. Implement private `decodeCancel(io.Reader) (string,error)` in server_linux.go: one object containing exactly one string request_id; reject repeated keys, nested values, unknown fields, trailing JSON and invalid IDs. Limit concurrent handlers to32; reject excess as busy. Handler context deadline5s. No hidden streaming/event endpoint.
+- [x] Add this Review Focus test (strings import); decoding fails before any Backend call:
 
 ```go
 func TestCancelRejectsDuplicateKeys(t *testing.T) {
@@ -690,9 +690,11 @@ func TestCancelRejectsDuplicateKeys(t *testing.T) {
     if err==nil {t.Fatal("ambiguous request accepted")}
 }
 ```
-- [ ] Add `TestHTTPBoundsAndUnknownFields`, `TestHistoryLimits`, `TestCancelRequestReplay`, `TestExistingSocketNotRemoved`, `TestServerCloseDoesNotDeleteReplacement`, `TestClientDoesNotUseProxy`, `TestUnsupportedHasNoEffects`, `TestCLISafeErrors`, `TestClientOversizedResponse`. In fake Backend count mutations; rejected/unsupported requests must leave count0. Include a Unix-only malicious server returning secret-like raw500 text; client prints only generic internal/unavailable.
-- [ ] Run `go test ./internal/control ./internal/cli -count=1`, `go test -race ./internal/control -count=1`; expect PASS and no TCP listener/secret output.
-- [ ] Commit `feat(control): expose bounded local service commands`; record hash/evidence. Do not ship fake backends as production data.
+- [x] Add `TestHTTPBoundsAndUnknownFields`, `TestHistoryLimits`, `TestCancelRequestReplay`, `TestExistingSocketNotRemoved`, `TestServerCloseDoesNotDeleteReplacement`, `TestClientDoesNotUseProxy`, `TestUnsupportedHasNoEffects`, `TestCLISafeErrors`, `TestClientOversizedResponse`. In fake Backend count mutations; rejected/unsupported requests must leave count0. Include a Unix-only malicious server returning secret-like raw500 text; client prints only generic internal/unavailable.
+- [x] Run `go test ./internal/control ./internal/cli -count=1`, `go test -race ./internal/control -count=1`; expect PASS and no TCP listener/secret output.
+- [x] Commit `feat(control): expose bounded local service commands`; record hash/evidence. Do not ship fake backends as production data. Reviewed fix `0430582` closes parent-permission and timeout-envelope gaps.
+
+**Deferred Minor review item:** The rooted bind path `/proc/self/fd/<fd>/<basename>` can exceed the Unix-socket pathname limit even when the configured path passes the prior `<108` check. Final whole-branch review must triage this acceptance edge case before integration; T09 uses short private fixture paths.
 
 ## T09 - Daemon composition, recovery and milestone evidence
 

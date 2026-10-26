@@ -2,6 +2,10 @@
 
 **Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
 
+## T08 reviewed Unix control API - 2026-10-26
+
+T08 Unix-only local API and CLI are complete in `c4e89f07aa169cc55ebaec0f597e8c112ad59c27` plus fix `04305822842c6515e505a3c4a642c8690a206125`. Native WSL focused/race/full suite, vet/build and real socket timeout regressions passed per task evidence; independent review closed two Important findings. One Minor rooted socket path-length edge case is deferred to final whole-branch review. The [plan task register](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order) marks T01-T08 done and T09 in progress. M00 production inventory remains incomplete; no merge/deployment approval.
+
 ## T07 reviewed process supervisor - 2026-10-25
 
 T07 bounded Linux process supervision is complete in `3f6e7cd8084de6121778c2e33afe9119c574af6f`. Native WSL focused/race/full tests, vet/build and direct/descendant PID cleanup passed per the task report; independent spec and quality review approved with no findings. Internal callers must supply a returning or cancellation-aware stdout writer and trusted in-group executables. The [plan task register](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order) marks T01-T07 done and T08 in progress. M00 production inventory remains incomplete; no merge/deployment approval.
