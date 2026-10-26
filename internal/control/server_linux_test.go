@@ -1,6 +1,7 @@
 package control
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
@@ -12,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"syscall"
 	"testing"
 	"time"
 
@@ -20,6 +22,15 @@ import (
 )
 
 const testRunID = "0123456789abcdef0123456789abcdef"
+
+func privateSocketPath(t *testing.T) string {
+	t.Helper()
+	parent := filepath.Join(t.TempDir(), "private")
+	if err := os.Mkdir(parent, 0700); err != nil {
+		t.Fatal(err)
+	}
+	return filepath.Join(parent, "control.sock")
+}
 
 type fakeBackend struct {
 	mu            sync.Mutex
@@ -183,7 +194,7 @@ func TestUnsupportedHasNoEffects(t *testing.T) {
 func TestExistingSocketNotRemoved(t *testing.T) {
 	for _, kind := range []string{"file", "symlink", "socket"} {
 		t.Run(kind, func(t *testing.T) {
-			path := filepath.Join(t.TempDir(), "control.sock")
+			path := privateSocketPath(t)
 			switch kind {
 			case "file":
 				if err := os.WriteFile(path, []byte("owned by another"), 0600); err != nil {
@@ -219,7 +230,7 @@ func TestExistingSocketNotRemoved(t *testing.T) {
 }
 
 func TestServerCloseDoesNotDeleteReplacement(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "control.sock")
+	path := privateSocketPath(t)
 	s, err := Listen(path, &fakeBackend{})
 	if err != nil {
 		t.Fatal(err)
@@ -329,7 +340,7 @@ func TestHandlerDeadline(t *testing.T) {
 
 func TestIncompleteHeadersTimeOut(t *testing.T) {
 	b := &fakeBackend{}
-	socket := filepath.Join(t.TempDir(), "control.sock")
+	socket := privateSocketPath(t)
 	s, err := Listen(socket, b)
 	if err != nil {
 		t.Fatal(err)
@@ -358,7 +369,7 @@ func TestIncompleteHeadersTimeOut(t *testing.T) {
 }
 
 func TestServerCloseRemovesOwnedSocket(t *testing.T) {
-	socket := filepath.Join(t.TempDir(), "control.sock")
+	socket := privateSocketPath(t)
 	s, err := Listen(socket, &fakeBackend{})
 	if err != nil {
 		t.Fatal(err)
@@ -379,7 +390,7 @@ func TestServerCloseRemovesOwnedSocket(t *testing.T) {
 }
 
 func TestServerClosePreservesReplacementSocket(t *testing.T) {
-	socket := filepath.Join(t.TempDir(), "control.sock")
+	socket := privateSocketPath(t)
 	s, err := Listen(socket, &fakeBackend{})
 	if err != nil {
 		t.Fatal(err)
@@ -423,6 +434,61 @@ func TestSocketParentSymlinkRejected(t *testing.T) {
 	}
 }
 
+func TestExistingSocketParentPermissionsUnchanged(t *testing.T) {
+	parent := filepath.Join(t.TempDir(), "shared")
+	if err := os.Mkdir(parent, 0755); err != nil {
+		t.Fatal(err)
+	}
+	socket := filepath.Join(parent, "control.sock")
+	if s, err := Listen(socket, &fakeBackend{}); err == nil {
+		s.Close(context.Background())
+		t.Fatal("nonprivate existing parent accepted")
+	} else if safeerr.Public(err).Code != safeerr.Denied {
+		t.Fatal("nonprivate parent did not return denied")
+	}
+	fi, err := os.Stat(parent)
+	if err != nil || fi.Mode().Perm() != 0755 {
+		t.Fatal("existing parent permissions changed")
+	}
+	if _, err := os.Lstat(socket); !os.IsNotExist(err) {
+		t.Fatal("socket created in nonprivate parent")
+	}
+}
+
+func TestSocketBindUsesHeldParentAfterSymlinkSwap(t *testing.T) {
+	base := t.TempDir()
+	private := filepath.Join(base, "private")
+	alternate := filepath.Join(base, "alternate")
+	for _, dir := range []string{private, alternate} {
+		if err := os.Mkdir(dir, 0700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	fd, err := openPrivateSocketParent(private)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer syscall.Close(fd)
+	moved := filepath.Join(base, "moved")
+	if err := os.Rename(private, moved); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(alternate, private); err != nil {
+		t.Fatal(err)
+	}
+	listener, _, _, err := listenOwnedSocket(fd, "control.sock")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer listener.Close()
+	if fi, err := os.Lstat(filepath.Join(moved, "control.sock")); err != nil || fi.Mode()&os.ModeSocket == 0 {
+		t.Fatal("socket was not bound under held parent")
+	}
+	if _, err := os.Lstat(filepath.Join(alternate, "control.sock")); !os.IsNotExist(err) {
+		t.Fatal("socket followed replacement symlink")
+	}
+}
+
 func TestErrorStatusMapping(t *testing.T) {
 	for _, tc := range []struct {
 		code   safeerr.Code
@@ -456,5 +522,37 @@ func TestHandlerTimeoutReturnsSafeJSON(t *testing.T) {
 	newHandler(b).ServeHTTP(w, httptest.NewRequest("GET", "/v1/jobs", nil).WithContext(ctx))
 	if w.Code != 503 || w.Header().Get("Content-Type") != "application/json" || !json.Valid(w.Body.Bytes()) || !strings.Contains(w.Body.String(), `"code":"unavailable"`) {
 		t.Fatal("timeout did not return a safe JSON envelope", w.Code, w.Header().Get("Content-Type"))
+	}
+}
+
+func TestUnixSocketHandlerTimeoutReturnsSafeJSON(t *testing.T) {
+	release := make(chan struct{})
+	defer close(release)
+	socket := privateSocketPath(t)
+	s, err := Listen(socket, &fakeBackend{block: release, ignoreContext: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	go s.Serve()
+	defer s.Close(context.Background())
+	conn, err := net.Dial("unix", socket)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+	if err := conn.SetReadDeadline(time.Now().Add(7 * time.Second)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := io.WriteString(conn, "GET /v1/jobs HTTP/1.1\r\nHost: localhost\r\n\r\n"); err != nil {
+		t.Fatal(err)
+	}
+	response, err := http.ReadResponse(bufio.NewReader(conn), nil)
+	if err != nil {
+		t.Fatal("timeout response lost on Unix socket", err)
+	}
+	defer response.Body.Close()
+	data, err := io.ReadAll(response.Body)
+	if err != nil || response.StatusCode != 503 || !json.Valid(data) || !strings.Contains(string(data), `"code":"unavailable"`) {
+		t.Fatal("Unix timeout did not return safe JSON 503", response.StatusCode, err)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -27,6 +28,7 @@ type Server struct {
 	listener *net.UnixListener
 	path     string
 	inode    os.FileInfo
+	parentFD int
 	once     sync.Once
 	closeErr error
 }
@@ -36,57 +38,81 @@ func Listen(socket string, b Backend) (*Server, error) {
 	if !validSocket(socket) || b == nil {
 		return nil, invalid()
 	}
-	parent := filepath.Dir(socket)
-	// Reject symlink ancestors before mkdir/bind. The final directory must be
-	// owned by this UID and private; trusted operators control that directory.
-	for p := parent; ; p = filepath.Dir(p) {
-		fi, err := os.Lstat(p)
-		if err == nil && fi.Mode()&os.ModeSymlink != 0 {
-			return nil, &safeerr.Error{Code: safeerr.Denied}
-		}
-		if err != nil && !os.IsNotExist(err) {
-			return nil, unavailable()
-		}
-		if p == "/" {
-			break
-		}
-	}
-	if err := os.MkdirAll(parent, 0700); err != nil {
-		return nil, unavailable()
-	}
-	fi, err := os.Lstat(parent)
-	if err != nil || !fi.IsDir() {
-		return nil, &safeerr.Error{Code: safeerr.Denied}
-	}
-	st, ok := fi.Sys().(*syscall.Stat_t)
-	if !ok || st.Uid != uint32(os.Geteuid()) {
-		return nil, &safeerr.Error{Code: safeerr.Denied}
-	}
-	if err := os.Chmod(parent, 0700); err != nil {
-		return nil, unavailable()
-	}
-	if _, err := os.Lstat(socket); err == nil {
-		return nil, &safeerr.Error{Code: safeerr.Conflict}
-	} else if !os.IsNotExist(err) {
-		return nil, unavailable()
-	}
-	listener, err := net.ListenUnix("unix", &net.UnixAddr{Name: socket, Net: "unix"})
+	parentFD, err := openPrivateSocketParent(filepath.Dir(socket))
 	if err != nil {
-		return nil, unavailable()
+		return nil, err
 	}
-	listener.SetUnlinkOnClose(false)
-	inode, err := os.Lstat(socket)
+	listener, ownedPath, inode, err := listenOwnedSocket(parentFD, filepath.Base(socket))
 	if err != nil {
-		listener.Close()
-		return nil, unavailable()
+		syscall.Close(parentFD)
+		return nil, err
 	}
-	s := &Server{listener: listener, path: socket, inode: inode}
-	if err := os.Chmod(socket, 0600); err != nil {
+	s := &Server{listener: listener, path: ownedPath, inode: inode, parentFD: parentFD}
+	if err := os.Chmod(ownedPath, 0600); err != nil {
 		s.Close(context.Background())
 		return nil, unavailable()
 	}
-	s.http = &http.Server{Handler: newHandler(b), ReadHeaderTimeout: 2 * time.Second, ReadTimeout: requestTimeout, WriteTimeout: requestTimeout, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 64 << 10, ErrorLog: log.New(io.Discard, "", 0)}
+	s.http = &http.Server{Handler: newHandler(b), ReadHeaderTimeout: 2 * time.Second, ReadTimeout: requestTimeout, WriteTimeout: requestTimeout + time.Second, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 64 << 10, ErrorLog: log.New(io.Discard, "", 0)}
 	return s, nil
+}
+
+// listenOwnedSocket uses the held parent rather than its original pathname.
+// A replaced ancestor therefore cannot redirect the bind into a new tree.
+func listenOwnedSocket(parentFD int, name string) (*net.UnixListener, string, os.FileInfo, error) {
+	ownedPath := fmt.Sprintf("/proc/self/fd/%d/%s", parentFD, name)
+	if _, err := os.Lstat(ownedPath); err == nil {
+		return nil, "", nil, &safeerr.Error{Code: safeerr.Conflict}
+	} else if !os.IsNotExist(err) {
+		return nil, "", nil, unavailable()
+	}
+	listener, err := net.ListenUnix("unix", &net.UnixAddr{Name: ownedPath, Net: "unix"})
+	if err != nil {
+		return nil, "", nil, unavailable()
+	}
+	listener.SetUnlinkOnClose(false)
+	inode, err := os.Lstat(ownedPath)
+	if err != nil {
+		listener.Close()
+		return nil, "", nil, unavailable()
+	}
+	return listener, ownedPath, inode, nil
+}
+
+// openPrivateSocketParent walks from root without following symlinks. Existing
+// parents must already be private; only missing directories are created.
+func openPrivateSocketParent(parent string) (int, error) {
+	flags := syscall.O_RDONLY | syscall.O_DIRECTORY | syscall.O_NOFOLLOW | syscall.O_CLOEXEC
+	fd, err := syscall.Open("/", flags, 0)
+	if err != nil {
+		return -1, unavailable()
+	}
+	for _, component := range strings.Split(strings.TrimPrefix(parent, "/"), "/") {
+		if component == "" {
+			continue
+		}
+		next, err := syscall.Openat(fd, component, flags, 0)
+		if errors.Is(err, syscall.ENOENT) {
+			if err = syscall.Mkdirat(fd, component, 0700); err == nil {
+				next, err = syscall.Openat(fd, component, flags, 0)
+			}
+		}
+		if err != nil {
+			syscall.Close(fd)
+			return -1, &safeerr.Error{Code: safeerr.Denied}
+		}
+		syscall.Close(fd)
+		fd = next
+	}
+	var st syscall.Stat_t
+	if syscall.Fstat(fd, &st) != nil {
+		syscall.Close(fd)
+		return -1, unavailable()
+	}
+	if st.Uid != uint32(os.Geteuid()) || st.Mode&0777 != 0700 {
+		syscall.Close(fd)
+		return -1, &safeerr.Error{Code: safeerr.Denied}
+	}
+	return fd, nil
 }
 
 func (s *Server) Serve() error {
@@ -118,6 +144,9 @@ func (s *Server) Close(ctx context.Context) error {
 				s.closeErr = unavailable()
 			}
 		} else if err != nil && !os.IsNotExist(err) {
+			s.closeErr = unavailable()
+		}
+		if syscall.Close(s.parentFD) != nil {
 			s.closeErr = unavailable()
 		}
 	})
