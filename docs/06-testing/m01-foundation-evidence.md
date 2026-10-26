@@ -93,3 +93,26 @@ All fix commands ran in the same non-root native WSL snapshot, with the approved
 ## Limits
 
 Synthetic fixtures establish foundation behavior only. No database dump, encrypted archive, provider request, webhook send, restore, scheduled backup, retention execution, Docker image, CI or production release was run or implemented. The integration suite builds a normal daemon binary; internal package race tests exercise the app/state/control implementations with race instrumentation. Network-namespace execution demonstrates these fixtures work without external networking, not a production egress policy or proof against every future code path. Startup probes and periodic requested-health probes are not a backup-protection guarantee. M00 deployment inventory, database/tool/provider qualification and business acceptance remain open. No merge, push or deployment is approved. T09 independent review and the previously deferred T08 Minor long rooted-bind path case remain with the controller.
+
+
+## Final whole-branch review fix wave - 2026-10-26
+
+One Important and two Minor findings were reproduced and fixed. Logger acquisition now creates/opens each directory with retained `O_DIRECTORY|O_NOFOLLOW` descriptors and `openat`/`mkdirat`, then acquires `os.Root` through the held `/proc/self/fd` directory. A deterministic regression replaces an ancestor immediately before creation and proves the replacement tree remains untouched. Existing inode, ownership, private-mode and closed-log-schema checks remain active.
+
+Control validates the actual descriptor-relative bind path before inspecting an existing inode or binding: 107-byte paths bind; 108-byte paths return safe invalid. The app also checks its rooted path before lock creation or stale recovery. The health-coalescing integration fixture now expires startup cache, bounds a barrier-released 24-client burst below the next cache interval and requires exactly one new write probe.
+
+All commands below ran in the private non-root native WSL fixture snapshot with `GOTOOLCHAIN=local TMPDIR=/tmp`, with the approved sync helper before every Go command:
+
+| Command | Observed result |
+|---|---|
+| `go test ./internal/observability -run TestLogDirectoryCreationAnchoredBeforeAncestorSubstitution -count=1 -v` before fix | RED: replacement tree mutated; acquired tree lacked child |
+| `go test ./internal/observability -count=1 -v` after fix | PASS all 16 tests |
+| Focused rooted-path/app/coalescing tests before fix | RED: unavailable/conflict instead of invalid; runtime lock creation; health delta zero |
+| Corrected app path fixture with guard removed | RED: accepted oversize rooted path and created runtime lock |
+| Same three focused regressions with `-count=3 -v` | PASS all three repetitions |
+| `go test ./... -count=1` | PASS all nine internal packages and real-binary integration (6.441s) |
+| `go test -race ./... -count=1` | PASS all nine internal packages and integration (7.959s), no race reports |
+| `go vet ./...` | PASS, empty output |
+| `go build ./cmd/bkplight` | PASS, empty output |
+
+Fixture corrections are preserved in the ignored final-fix report: the initial ancestor swap happened before validation rather than at mkdir; an initial app temporary parent was too long to guarantee actual rooted-path overflow. Both were corrected and behavioral RED was directly observed before final verification. These results establish fixture behavior, not production inventory, independent review approval, integration or release readiness. Scoped independent re-review remains pending; H3/H4 are absent.

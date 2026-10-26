@@ -60,6 +60,11 @@ func Listen(socket string, b Backend) (*Server, error) {
 // A replaced ancestor therefore cannot redirect the bind into a new tree.
 func listenOwnedSocket(parentFD int, name string) (*net.UnixListener, string, os.FileInfo, error) {
 	ownedPath := fmt.Sprintf("/proc/self/fd/%d/%s", parentFD, name)
+	// The kernel sees this path, whose prefix can exceed the configured parent.
+	// Reject it before inspecting an existing entry or attempting any bind.
+	if !validSocket(ownedPath) {
+		return nil, "", nil, invalid()
+	}
 	if _, err := os.Lstat(ownedPath); err == nil {
 		return nil, "", nil, &safeerr.Error{Code: safeerr.Conflict}
 	} else if !os.IsNotExist(err) {

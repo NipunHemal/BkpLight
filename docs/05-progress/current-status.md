@@ -2,6 +2,10 @@
 
 **Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
 
+## Final whole-branch review fixes prepared - 2026-10-26
+
+The logging pre-creation ancestor race, actual rooted Unix path-length edge case and health-coalescing startup-cache false positive have fixes and deterministic RED/GREEN evidence. Full native WSL tests, complete race suite, vet and build pass; see [final fix evidence](../06-testing/m01-foundation-evidence.md#final-whole-branch-review-fix-wave---2026-10-26). T09/whole-branch review remains in_review pending controller re-review. Earlier deferred-Minor statements below are historical; M00 remains incomplete and H3/H4 are absent. No merge, push or deployment.
+
 ## T09 composition candidate in review - 2026-10-26
 
 Review fix round 1 addresses the Important concurrent stale-socket recovery race using a persistent private per-socket runtime flock held from before recovery until after listener close, alongside retained rooted directory identity. Deterministic competing-claim and real competing-daemon tests, full native tests and covering race checks pass; [fix evidence](../06-testing/m01-foundation-evidence.md#t09-independent-review-fix-round-1---2026-10-26) records results. T09 remains in_review pending scoped independent re-review. The coalescing-test Minor joins the T08 socket-length Minor for whole-branch review.

@@ -510,3 +510,25 @@ func TestShutdownReapsOwnedHelper(t *testing.T) {
 		t.Fatal("helper PID remains", pid, err)
 	}
 }
+
+func TestRuntimeSocketRejectsOversizeRootedPathBeforeLock(t *testing.T) {
+	// A short configured parent lets the original path fit while its rooted
+	// descriptor-relative form exceeds Linux's 107-byte pathname limit.
+	parent := fmt.Sprintf("/tmp/s%x", os.Getpid())
+	if err := os.Mkdir(parent, 0700); err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(parent)
+	path := filepath.Join(parent, strings.Repeat("s", 107-len(parent)-1))
+	runtime, err := claimRuntimeSocket(path)
+	if runtime != nil {
+		runtime.Close()
+	}
+	if safeerr.Public(err).Code != safeerr.Invalid {
+		t.Errorf("oversize rooted runtime path accepted: %v", err)
+	}
+	entries, err := os.ReadDir(parent)
+	if err != nil || len(entries) != 0 {
+		t.Error("invalid rooted path mutated runtime directory", err)
+	}
+}

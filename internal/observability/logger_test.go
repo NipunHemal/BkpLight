@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -247,5 +248,44 @@ func TestHealthCheckedDiagnosticUsesClosedSchema(t *testing.T) {
 	}
 	if err = l.Write(Record{Time: time.Now(), Level: "debug", MessageCode: "service.health_checked secret"}); err == nil {
 		t.Fatal("arbitrary diagnostic accepted")
+	}
+}
+
+// Holding an ancestor must keep creation in that directory after its pathname
+// is replaced. A pathname-based MkdirAll creates logs in the replacement tree.
+func TestLogDirectoryCreationAnchoredBeforeAncestorSubstitution(t *testing.T) {
+	parent := t.TempDir()
+	ancestor := filepath.Join(parent, "ancestor")
+	outside := filepath.Join(parent, "outside")
+	for _, p := range []string{ancestor, outside} {
+		if err := os.Mkdir(p, 0700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	held, err := os.Open(ancestor)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer held.Close()
+	saved := ancestor + ".saved"
+	dir, err := acquireLogDirectoryAt(held, "logs", func(fd int, name string, mode uint32) error {
+		if err := os.Rename(ancestor, saved); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Symlink(outside, ancestor); err != nil {
+			t.Fatal(err)
+		}
+		return syscall.Mkdirat(fd, name, mode)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer dir.Close()
+	if _, err = os.Lstat(filepath.Join(outside, "logs")); !os.IsNotExist(err) {
+		t.Error("replacement tree mutated during directory creation")
+	}
+	info, err := os.Stat(filepath.Join(saved, "logs"))
+	if err != nil || info.Mode().Perm() != 0700 {
+		t.Error("held directory did not receive private logs directory", err)
 	}
 }

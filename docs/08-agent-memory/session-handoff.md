@@ -2,6 +2,10 @@
 
 **Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
 
+## Final whole-branch review fixes handoff - 2026-10-26
+
+The logging pre-creation ancestor race, actual rooted Unix path-length edge case and health-coalescing startup-cache false positive have fixes and deterministic RED/GREEN evidence. Full native WSL tests, complete race suite, vet and build pass; see [final fix evidence](../06-testing/m01-foundation-evidence.md#final-whole-branch-review-fix-wave---2026-10-26). T09/whole-branch review remains in_review pending controller re-review. Earlier deferred-Minor statements below are historical; M00 remains incomplete and H3/H4 are absent. No merge, push or deployment.
+
 ## T09 implementation to independent review - 2026-10-26
 
 T09 fix round 1: the Important stale-check/remove/bind race across different state directories is fixed by a private same-parent per-socket lock file, never unlinked, held with nonblocking flock until after `Server.Close`. Runtime parent identity remains held/verified; SQLite state ownership is first acquired/last released. Covering deterministic ownership and real competing-daemon fixtures, full native suite and app/integration race checks pass per [fix evidence](../06-testing/m01-foundation-evidence.md#t09-independent-review-fix-round-1---2026-10-26). Controller must perform scoped re-review and record the fix hash. The reviewer's Minor coalescing-test weakness is deferred to final whole-branch review; no H3/H4 approval.

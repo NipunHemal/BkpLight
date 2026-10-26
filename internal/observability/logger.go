@@ -3,10 +3,13 @@ package observability
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"bkplight.local/bkplight/internal/safeerr"
@@ -73,47 +76,42 @@ func openWithRoot(o Options, acquire func(string) (*os.Root, error)) (*Logger, e
 	if o.Now == nil {
 		o.Now = time.Now
 	}
-	// Reject symlink components before creating or opening the private directory.
-	for p := filepath.Clean(o.Directory); ; p = filepath.Dir(p) {
-		info, e := os.Lstat(p)
-		if e != nil && !os.IsNotExist(e) {
-			return nil, unavailable()
-		}
-		if e == nil && (!info.IsDir() || info.Mode()&os.ModeSymlink != 0) {
-			return nil, unavailable()
-		}
-		if p == filepath.Dir(p) {
-			break
-		}
-	}
-	if e := os.MkdirAll(o.Directory, 0700); e != nil {
-		return nil, unavailable()
-	}
-	info, e := os.Lstat(o.Directory)
-	if e != nil || !privateDirectory(info) {
-		return nil, unavailable()
-	}
-	root, e := acquire(o.Directory)
+	parent, e := os.Open("/")
 	if e != nil {
 		return nil, unavailable()
 	}
-	// Bind the pre-open checks to the acquired directory before any mutation.
+	directory, e := acquireLogDirectoryAt(parent, filepath.Clean(o.Directory)[1:], syscall.Mkdirat)
+	_ = parent.Close()
+	if e != nil {
+		return nil, unavailable()
+	}
+	defer directory.Close()
+	info, e := directory.Stat()
+	if e != nil {
+		return nil, unavailable()
+	}
+	root, e := acquire(fmt.Sprintf("/proc/self/fd/%d", directory.Fd()))
+	if e != nil {
+		return nil, unavailable()
+	}
+	// Bind the acquired directory identity before chmod or log mutation.
 	// A writable ancestor may have replaced the configured path in between.
-	directory, e := root.Open(".")
+	openedDirectory, e := root.Open(".")
 	if e != nil {
 		_ = root.Close()
 		return nil, unavailable()
 	}
-	opened, e := directory.Stat()
-	if e != nil || !privateDirectory(opened) || !os.SameFile(info, opened) {
-		_ = directory.Close()
+	opened, e := openedDirectory.Stat()
+	current, pathErr := os.Lstat(o.Directory)
+	if e != nil || pathErr != nil || !privateDirectory(opened) || !os.SameFile(info, opened) || !os.SameFile(info, current) {
+		_ = openedDirectory.Close()
 		_ = root.Close()
 		return nil, unavailable()
 	}
 	// Tighten a same-owner directory (including testing.TempDir's 0755 child).
 	// Group/world-writable directories were rejected before acquiring this handle.
-	e = directory.Chmod(0700)
-	closeErr := directory.Close()
+	e = openedDirectory.Chmod(0700)
+	closeErr := openedDirectory.Close()
 	if e != nil || closeErr != nil {
 		_ = root.Close()
 		return nil, unavailable()
@@ -133,6 +131,48 @@ func openWithRoot(o Options, acquire func(string) (*os.Root, error)) (*Logger, e
 		return nil, unavailable()
 	}
 	return l, nil
+}
+
+// acquireLogDirectoryAt retains each no-follow descriptor until the next is
+// acquired. Creation is relative to that handle even if an ancestor is moved.
+// mkdir is the filesystem boundary, permitting deterministic substitution tests.
+func acquireLogDirectoryAt(parent *os.File, relative string, mkdir func(int, string, uint32) error) (*os.File, error) {
+	if relative == "" || filepath.IsAbs(relative) {
+		return nil, unavailable()
+	}
+	parts := strings.Split(relative, "/")
+	for _, part := range parts {
+		if part == "" || part == "." || part == ".." {
+			return nil, unavailable()
+		}
+	}
+	dir := parent
+	for _, part := range parts {
+		flags := syscall.O_RDONLY | syscall.O_DIRECTORY | syscall.O_NOFOLLOW | syscall.O_CLOEXEC
+		fd, err := syscall.Openat(int(dir.Fd()), part, flags, 0)
+		if err == syscall.ENOENT {
+			if makeErr := mkdir(int(dir.Fd()), part, 0700); makeErr == nil || makeErr == syscall.EEXIST {
+				fd, err = syscall.Openat(int(dir.Fd()), part, flags, 0)
+			}
+		}
+		if err != nil {
+			if dir != parent {
+				_ = dir.Close()
+			}
+			return nil, unavailable()
+		}
+		next := os.NewFile(uintptr(fd), part)
+		if dir != parent {
+			_ = dir.Close()
+		}
+		dir = next
+	}
+	info, err := dir.Stat()
+	if err != nil || !privateDirectory(info) {
+		_ = dir.Close()
+		return nil, unavailable()
+	}
+	return dir, nil
 }
 
 func validRecord(r Record) bool {

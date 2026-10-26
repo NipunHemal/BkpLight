@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -554,5 +555,53 @@ func TestUnixSocketHandlerTimeoutReturnsSafeJSON(t *testing.T) {
 	data, err := io.ReadAll(response.Body)
 	if err != nil || response.StatusCode != 503 || !json.Valid(data) || !strings.Contains(string(data), `"code":"unavailable"`) {
 		t.Fatal("Unix timeout did not return safe JSON 503", response.StatusCode, err)
+	}
+}
+
+func TestRootedSocketPathLengthBoundary(t *testing.T) {
+	parent := filepath.Dir(privateSocketPath(t))
+	fd, err := openPrivateSocketParent(parent)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer syscall.Close(fd)
+	// A larger descriptor makes the rooted path longer than the configured
+	// short pathname. F_DUPFD_CLOEXEC reserves an unused descriptor atomically.
+	high, _, errno := syscall.Syscall(syscall.SYS_FCNTL, uintptr(fd), syscall.F_DUPFD_CLOEXEC, 10000)
+	if errno != 0 {
+		t.Fatal(errno)
+	}
+	defer syscall.Close(int(high))
+	prefix := fmt.Sprintf("/proc/self/fd/%d/", high)
+	for _, length := range []int{107, 108} {
+		name := strings.Repeat("s", length-len(prefix))
+		listener, _, _, err := listenOwnedSocket(int(high), name)
+		if length == 107 {
+			if err != nil {
+				t.Fatal("107-byte rooted path rejected", err)
+			}
+			listener.Close()
+			if err := os.Remove(filepath.Join(parent, name)); err != nil {
+				t.Fatal(err)
+			}
+		} else {
+			if listener != nil {
+				listener.Close()
+			}
+			if safeerr.Public(err).Code != safeerr.Invalid {
+				t.Error("108-byte rooted path must be invalid", err)
+			}
+			if _, err := os.Lstat(filepath.Join(parent, name)); !os.IsNotExist(err) {
+				t.Error("invalid path created socket", err)
+			}
+			// Length rejection must precede inspection/recovery of any existing inode.
+			if err := os.WriteFile(filepath.Join(parent, name), []byte("preserve"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			_, _, _, err = listenOwnedSocket(int(high), name)
+			if safeerr.Public(err).Code != safeerr.Invalid {
+				t.Error("invalid path inspected existing inode", err)
+			}
+		}
 	}
 }

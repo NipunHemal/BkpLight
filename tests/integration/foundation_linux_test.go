@@ -399,26 +399,34 @@ func TestHealthProbeCoalescesConcurrentRequests(t *testing.T) {
 	d := launch(t, f)
 	waitReady(t, f, d)
 	db := openDB(t, f)
+	// waitReady can use the startup cache. No request runs during this bounded
+	// expiry interval, so the burst below must execute a fresh write probe.
+	time.Sleep(time.Second + 20*time.Millisecond)
 	before := scalar(t, db, "SELECT tick FROM health_probe")
+	ctx, cancel := context.WithTimeout(context.Background(), 750*time.Millisecond)
+	defer cancel()
+	start := make(chan struct{})
 	var wg sync.WaitGroup
 	failures := make(chan error, 24)
 	for range 24 {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			_, err := control.NewClient(f.socket).Do(context.Background(), "GET", "/v1/health", nil)
+			<-start
+			_, err := control.NewClient(f.socket).Do(ctx, "GET", "/v1/health", nil)
 			if err != nil {
 				failures <- err
 			}
 		}()
 	}
+	close(start)
 	wg.Wait()
 	close(failures)
 	for err := range failures {
 		t.Fatal(err)
 	}
-	if delta := scalar(t, db, "SELECT tick FROM health_probe") - before; delta > 1 {
-		t.Fatal("health write storm", delta)
+	if delta := scalar(t, db, "SELECT tick FROM health_probe") - before; delta != 1 {
+		t.Fatal("expected exactly one refreshed health probe", delta)
 	}
 	_ = d.cmd.Process.Signal(syscall.SIGTERM)
 	d.wait(t, true)

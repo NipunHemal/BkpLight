@@ -254,6 +254,11 @@ func claimRuntimeSocket(path string) (_ *runtimeSocket, err error) {
 			r.Close()
 		}
 	}()
+	// Validate the actual path before creating the ownership lock or recovering
+	// an existing socket. Control independently checks its own bind descriptor.
+	if len(r.ownedPath()) >= 108 {
+		return nil, &safeerr.Error{Code: safeerr.Invalid}
+	}
 	name := "." + filepath.Base(path) + ".lock"
 	fd, err := syscall.Openat(int(parent.Fd()), name, syscall.O_CREAT|syscall.O_RDWR|syscall.O_NOFOLLOW|syscall.O_CLOEXEC|syscall.O_NONBLOCK, 0600)
 	if err != nil {
