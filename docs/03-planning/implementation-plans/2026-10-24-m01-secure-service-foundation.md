@@ -34,7 +34,7 @@ The first review found five additional input cases worth pinning down. Tests bel
 
 ---
 
-**Document status:** Plan v0.1 approved for subagent execution on 2026-10-25; M01 synthetic fixture entry resolved, T01 ready and T02-T09 backlog; application runtime checks not_run.
+**Document status:** Plan v0.1 approved for subagent execution on 2026-10-25; M01 synthetic fixture entry resolved; T01-T08 done, T09 in_review pending independent review; native fixture verification recorded in the foundation evidence.
 
 ## Native WSL fixture disposition - 2026-10-25
 
@@ -116,7 +116,7 @@ Not delivered: dumps/encryption (M02), remote commits/upload (M03), restore (M04
 | T06 | Config revisions, idempotent run state and outbox | T02, T05 | done | `072cd38ab2d725f4229b0fb02c033cbfa50f9206`; native WSL 25 new tests, state race/full suite, vet/build; independent spec and quality review approved, no findings |
 | T07 | Linux native-process supervisor | T01 | done | `3f6e7cd8084de6121778c2e33afe9119c574af6f`; native WSL focused/race/full suite, vet/build and PID/ESRCH evidence; independent spec and quality review approved, no findings |
 | T08 | Local HTTP contracts and CLI client | T02, T06 | done | `c4e89f07aa169cc55ebaec0f597e8c112ad59c27`, fix `04305822842c6515e505a3c4a642c8690a206125`; native WSL focused/race/full suite, vet/build; two Important review findings fixed; one Minor path-length item deferred to whole-branch review |
-| T09 | Daemon composition, health/shutdown and acceptance harness | T03, T04, T05, T06, T07, T08 | in_progress | T03-T08 reviewed; implementer dispatch pending from `04305822842c6515e505a3c4a642c8690a206125` |
+| T09 | Daemon composition, health/shutdown and acceptance harness | T03, T04, T05, T06, T07, T08 | in_review | Based on `50dd7b7`; native app/internal/race/fuzz/real-binary integration, isolated-network fixture, vet/build/module/example checks recorded in [foundation evidence](../../06-testing/m01-foundation-evidence.md); independent review pending; actual task hash follows in bookkeeping |
 
 Execute serially T01-T09 unless H2 selects parallel mode and assigns disjoint file ownership. T01 owns shared errors, T02 owns config, T05/T06 own schema/store; consumers cannot silently change them. The record above is authoritative for task status. After each real commit record its hash/evidence in the task record using the Git bookkeeping policy. Integration/release state: not_started. Implementation owner/reviewer: unassigned until H2; no invented staffing.
 
@@ -698,9 +698,11 @@ func TestCancelRejectsDuplicateKeys(t *testing.T) {
 
 ## T09 - Daemon composition, recovery and milestone evidence
 
+**Execution record (2026-10-26):** Implementation and fixture verification are ready for independent review. Controller explicitly approved extending the file map by `internal/observability/logger.go` and `logger_test.go` to allow only the fixed internal `service.health_checked` diagnostic, so an idle daemon can test its log sink at most once per second. RED/GREEN and actual command results are in [foundation evidence](../../06-testing/m01-foundation-evidence.md). The daemon starts zero native helpers; the app-context helper test is fixture-owned. Final review and integration options remain with the controller; no H3/H4 approval.
+
 **Dependencies:** T03-T08. **Files:** T09 row. **Acceptance:** all M01 criteria, especially M01-AC02/09/11/12. **Consumes:** every shared contract. **Produces:** app.Serve, real control.Backend and complete Linux fixture acceptance.
 
-- [ ] Create the app/integration fixtures before wiring. Tests build/reexec the actual `cmd/bkplight` binary and generate YAML with only temp paths. Use readiness polling over the Unix socket and bounded deadlines, not fixed sleeps. All temp dirs/artifacts are owned by the test; shutdown and reap the daemon in t.Cleanup even on failure.
+- [x] Create the app/integration fixtures before wiring. Tests build/reexec the actual `cmd/bkplight` binary and generate YAML with only temp paths. Use readiness polling over the Unix socket and bounded deadlines, not fixed sleeps. All temp dirs/artifacts are owned by the test; shutdown and reap the daemon in t.Cleanup even on failure.
 
 ```go
 // internal/app/serve_linux_test.go, package app; imports context, os, path/filepath, testing
@@ -713,8 +715,8 @@ func TestInvalidConfigCreatesNoState(t *testing.T) {
 }
 ```
 
-- [ ] Run `go test ./internal/app -run TestInvalidConfigCreatesNoState -count=1 -v`; observe RED.
-- [ ] Wire startup/shutdown in order. Define private `backend struct { store *state.Store; logs *observability.Logger; ready atomic.Bool }` in app/health_linux.go; implement all control.Backend methods. Cancel first checks readiness, then delegates to the transactional Store.Cancel from T06. The run_commands table is already owned by T05; do not alter a previously committed migration in this task.
+- [x] Run `go test ./internal/app -run TestInvalidConfigCreatesNoState -count=1 -v`; observe RED.
+- [x] Wire startup/shutdown in order. Define private `backend struct { store *state.Store; logs *observability.Logger; ready atomic.Bool }` in app/health_linux.go; implement all control.Backend methods. Cancel first checks readiness, then delegates to the transactional Store.Cancel from T06. The run_commands table is already owned by T05; do not alter a previously committed migration in this task.
 
 ```text
 decode/validate YAML before creating state/log/socket directories
@@ -731,11 +733,11 @@ close owned socket, flush logs and state, release singleton last
 
 Health returns `live:true`, `ready:true`, `scope:"foundation"` only when state/logs are usable; components explicitly report `scheduler:"not_implemented"`, `backup_engine:"not_implemented"`. It must not expose last-backup timestamps or protection status as healthy. Failed write probe or log sink makes ready false; cancel mutation returns503 without partial state. Cache write probe results for at most1 second to avoid concurrent health traffic creating a write storm; startup probe is immediate. Permission/full-disk errors log a fixed code to stderr if the sink is unusable.
 
-- [ ] Stale-socket handling: while holding the exclusive state lock, require the configured parent directory to be private and owned, require existing path to be a socket, attempt a bounded Unix connection and reject if any listener responds. Only an unresponsive socket in that same protected runtime directory may be removed. State/config/runtime directory identity must remain fixed for this daemon; never recover a path outside it. Test two daemons with different state directories and same socket: second must not remove the first listener.
-- [ ] Before startup mutation, resolve existing directory ancestors and reject symlink aliases that make log/staging/state paths overlap each other or secret roots. `TestResolvedDirectoryOverlapPreventsStartup` uses two different lexical paths resolving to the same temporary directory; assert Serve fails without database/socket/log creation. This runtime check complements T02's lexical test; trusted operator mounts remain part of deployment review.
-- [ ] Add `TestFoundationLifecycle` (start actual binary, jobs/history empty, health foundation-only, SIGTERM, exit0, socket removed, restart retains config revision); `TestEnabledMissingSecretPreventsListen`; `TestDaemonSingleton`; `TestHealthDegradesOnStateWriteFailure`; `TestHealthDegradesOnLogFailure`; `TestCancelIdempotency` (same command replay, request reused for different run conflicts, terminal wrong command conflict); `TestCrashRecoveryDoesNotReplayEffects`; `TestNoNotificationsWithoutChannels`; `TestNoTCPListener` (inspect child `/proc/<pid>/fd` socket inode set against its namespace's TCP tables, no TCP sockets; Unix socket present); `TestShutdownReapsOwnedHelper`; `TestStaleSocketSafety`; `TestUnsupportedCommandsNoMutations`.
-- [ ] Native-process and SQLite fixtures use no Docker, external database, storage account or real webhook. Actual network-denial proof can run the final test binary in an authorized isolated network namespace when available; absence is recorded as additional evidence not_run, not a claim of tested egress isolation. Production network isolation remains M08.
-- [ ] Create development-environment.md with exact Linux toolchain/bootstrap/test commands below and evidence doc with candidate, tool/runtime versions, acceptance mapping, command/result/timestamp, review findings and limits. Link both in docs/README.md. README states foundation-only capabilities and local-only control. No Dockerfile/CI config is added in this milestone.
+- [x] Stale-socket handling: while holding the exclusive state lock, require the configured parent directory to be private and owned, require existing path to be a socket, attempt a bounded Unix connection and reject if any listener responds. Only an unresponsive socket in that same protected runtime directory may be removed. State/config/runtime directory identity must remain fixed for this daemon; never recover a path outside it. Test two daemons with different state directories and same socket: second must not remove the first listener.
+- [x] Before startup mutation, resolve existing directory ancestors and reject symlink aliases that make log/staging/state paths overlap each other or secret roots. `TestResolvedDirectoryOverlapPreventsStartup` uses two different lexical paths resolving to the same temporary directory; assert Serve fails without database/socket/log creation. This runtime check complements T02's lexical test; trusted operator mounts remain part of deployment review.
+- [x] Add `TestFoundationLifecycle` (start actual binary, jobs/history empty, health foundation-only, SIGTERM, exit0, socket removed, restart retains config revision); `TestEnabledMissingSecretPreventsListen`; `TestDaemonSingleton`; `TestHealthDegradesOnStateWriteFailure`; `TestHealthDegradesOnLogFailure`; `TestCancelIdempotency` (same command replay, request reused for different run conflicts, terminal wrong command conflict); `TestCrashRecoveryDoesNotReplayEffects`; `TestNoNotificationsWithoutChannels`; `TestNoTCPListener` (inspect child `/proc/<pid>/fd` socket inode set against its namespace's TCP tables, no TCP sockets; Unix socket present); `TestShutdownReapsOwnedHelper`; `TestStaleSocketSafety`; `TestUnsupportedCommandsNoMutations`.
+- [x] Native-process and SQLite fixtures use no Docker, external database, storage account or real webhook. Actual network-denial proof can run the final test binary in an authorized isolated network namespace when available; absence is recorded as additional evidence not_run, not a claim of tested egress isolation. Production network isolation remains M08.
+- [x] Create development-environment.md with exact Linux toolchain/bootstrap/test commands below and evidence doc with candidate, tool/runtime versions, acceptance mapping, command/result/timestamp, review findings and limits. Link both in docs/README.md. README states foundation-only capabilities and local-only control. No Dockerfile/CI config is added in this milestone.
 - [ ] Run the final verification sequence below after review fixes; record actual outputs. Use requesting-code-review and verification-before-completion; close blocking findings. Commit `feat(app): compose secure service foundation` and record all T01-T09 hashes/status/evidence, then use finishing-a-development-branch to prepare integration options. Merge needs H3; do not merge, push or deploy automatically.
 
 ## Exact verification commands (future authorized Linux execution)

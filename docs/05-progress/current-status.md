@@ -2,6 +2,10 @@
 
 **Document status:** M01 subagent execution authorized; synthetic WSL fixture entry resolved, 2026-10-25.
 
+## T09 composition candidate in review - 2026-10-26
+
+The foundation daemon now composes validated config/active secrets, singleton SQLite, safe logs, recovery, config activation, readiness and Unix control, with orderly signal shutdown and owned-resource release. T09 is **in_review**, pending independent task/whole-branch review; T01-T08 remain done. Native internal/race suites, config fuzz, real-binary integration, optional isolated-network integration, vet and module verification passed; exact results and remaining final checks are in [foundation evidence](../06-testing/m01-foundation-evidence.md). The [development instructions](../03-planning/development-environment.md) describe the qualified Linux fixture workspace. Health is foundation-only; no worker/provider/sender starts. The narrow fixed `service.health_checked` log-code extension was explicitly ruled necessary by the controller for idle-sink readiness probing. M00 inventory remains incomplete; integration/release not_started and H3/H4 absent.
+
 ## T08 reviewed Unix control API - 2026-10-26
 
 T08 Unix-only local API and CLI are complete in `c4e89f07aa169cc55ebaec0f597e8c112ad59c27` plus fix `04305822842c6515e505a3c4a642c8690a206125`. Native WSL focused/race/full suite, vet/build and real socket timeout regressions passed per task evidence; independent review closed two Important findings. One Minor rooted socket path-length edge case is deferred to final whole-branch review. The [plan task register](../03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order) marks T01-T08 done and T09 in progress. M00 production inventory remains incomplete; no merge/deployment approval.

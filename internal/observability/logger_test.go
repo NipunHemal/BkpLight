@@ -234,3 +234,18 @@ func TestLoggerRejectsDirectorySwapBeforeChmod(t *testing.T) {
 		t.Error("replacement directory archive pruned")
 	}
 }
+
+// Health probes use a fixed code so idle daemons can discover a failed sink.
+func TestHealthCheckedDiagnosticUsesClosedSchema(t *testing.T) {
+	l, err := Open(Options{Directory: t.TempDir()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer l.Close()
+	if err = l.Write(Record{Time: time.Now(), Level: "debug", MessageCode: "service.health_checked"}); err != nil {
+		t.Fatal("safe health diagnostic rejected", err)
+	}
+	if err = l.Write(Record{Time: time.Now(), Level: "debug", MessageCode: "service.health_checked secret"}); err == nil {
+		t.Fatal("arbitrary diagnostic accepted")
+	}
+}

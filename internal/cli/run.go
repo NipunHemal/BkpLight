@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 
+	"bkplight.local/bkplight/internal/app"
 	"bkplight.local/bkplight/internal/config"
 	"bkplight.local/bkplight/internal/control"
 	"bkplight.local/bkplight/internal/safeerr"
@@ -28,6 +29,19 @@ func Run(ctx context.Context, args []string, out, errOut io.Writer) int {
 		return invalidCommand()
 	}
 	switch args[0] {
+	case "serve":
+		flags := flag.NewFlagSet("serve", flag.ContinueOnError)
+		flags.SetOutput(io.Discard)
+		path := flags.String("config", "", "configuration file")
+		if err := flags.Parse(args[1:]); err != nil || flags.NArg() != 0 || *path == "" {
+			return invalidCommand()
+		}
+		if err := app.Serve(ctx, *path); err != nil {
+			public := safeerr.Public(err)
+			fmt.Fprintln(errOut, public.Error())
+			return 3
+		}
+		return 0
 	case "health", "jobs", "history", "operation":
 		return runControl(ctx, args, out, errOut)
 	case "backup", "upload", "verify", "restore", "retention", "notification", "notifications", "source", "destination", "deliveries", "catalog":

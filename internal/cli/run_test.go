@@ -26,6 +26,15 @@ func TestVersionCommand(t *testing.T) {
 	}
 }
 
+func TestServeCommandSafeValidation(t *testing.T) {
+	for _, args := range [][]string{{"serve"}, {"serve", "--unknown", "synthetic-secret"}, {"serve", "--config", "/no-such-synthetic-config"}} {
+		var out, errOut bytes.Buffer
+		if code := Run(context.Background(), args, &out, &errOut); code == 0 || out.Len() != 0 || strings.Contains(errOut.String(), "synthetic") {
+			t.Fatal(code, out.String(), errOut.String())
+		}
+	}
+}
+
 func secretConfig(t *testing.T) (string, string) {
 	t.Helper()
 	base := t.TempDir()

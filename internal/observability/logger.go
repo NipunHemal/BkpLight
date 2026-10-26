@@ -145,7 +145,7 @@ func validRecord(r Record) bool {
 		return false
 	}
 	switch r.MessageCode {
-	case "service.started", "service.stopped", "service.degraded", "config.activated", "state.failed", "process.started", "process.finished", "process.cancelled":
+	case "service.started", "service.stopped", "service.degraded", "service.health_checked", "config.activated", "state.failed", "process.started", "process.finished", "process.cancelled":
 	default:
 		return false
 	}

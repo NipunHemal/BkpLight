@@ -1,6 +1,6 @@
 # Documentation index
 
-**Document status:** Active navigation; architecture v0.1 approved under H1, roadmap v0.1 prepared; implementation unapproved.
+**Document status:** Active navigation; M01 foundation implemented under H2, T09 independent review pending.
 
 ## Purpose
 
@@ -8,7 +8,7 @@ Navigate project documentation and distinguish templates from approved or verifi
 
 ## Status and authority
 
-Latest update, 2026-10-25: H2 is granted for the M01 plan and subagent execution. M01 is blocked at entry on Linux tooling/fixture prerequisites; earlier pending-H2 statements below are historical. See [current status](05-progress/current-status.md) and the [plan execution record](03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#execution-authorization-and-blocked-entry---2026-10-25).
+Latest update, 2026-10-26: H2 covers M01 synthetic fixtures and subagent execution. Native WSL entry is resolved; T01-T08 are reviewed and T09 daemon composition/acceptance is in_review. Earlier blocked-entry/pending-H2 statements below are historical. No merge/deployment approval. See [current status](05-progress/current-status.md), [foundation evidence](06-testing/m01-foundation-evidence.md) and the [task register](03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order).
 
 - **Template:** structure exists; substantive information remains TODO.
 - **Draft:** content exists but is not approved.
@@ -37,6 +37,8 @@ The user approved architecture v0.1/P01-P09 and ADR-001 on 2026-10-24, then requ
 
 ## 03 Planning
 
+- [Linux development environment and fixture commands](03-planning/development-environment.md)
+
 - [Git and task-wise commit workflow](03-planning/git-workflow.md)
 
 - [Development lifecycle: all 15 stages and human gates](03-planning/development-lifecycle.md)
@@ -60,6 +62,8 @@ The user approved architecture v0.1/P01-P09 and ADR-001 on 2026-10-24, then requ
 - [Blockers and limitations](05-progress/blockers.md)
 
 ## 06 Testing
+
+- [M01 foundation fixture evidence](06-testing/m01-foundation-evidence.md)
 
 - [M01 workspace preflight](06-testing/m01-workspace-preflight.md)
 
