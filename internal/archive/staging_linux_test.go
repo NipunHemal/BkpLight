@@ -49,6 +49,9 @@ func TestStagerFinalizesOnlyEncryptedArtifact(t *testing.T) {
 	if artifact.RelativePath != fixtureID+".age" || artifact.CiphertextSize <= 0 || len(artifact.CiphertextSHA256) != 64 {
 		t.Fatalf("invalid artifact metadata: %+v", artifact)
 	}
+	if err := stager.Verify(artifact.RelativePath, artifact.CiphertextSize, artifact.CiphertextSHA256); err != nil {
+		t.Fatalf("finalized artifact failed verification: %v", err)
+	}
 	if _, err := os.Stat(filepath.Join(dir, fixtureID+".partial")); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("partial remains after finalize: %v", err)
 	}
@@ -72,6 +75,37 @@ func TestStagerFinalizesOnlyEncryptedArtifact(t *testing.T) {
 	}
 	if info, err := os.Stat(filepath.Join(dir, artifact.RelativePath)); err != nil || info.Mode().Perm() != 0600 {
 		t.Fatalf("ciphertext file not private: %v", err)
+	}
+}
+
+func TestStagerVerifyRejectsTamperedCiphertext(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "staging")
+	_, key := recipient(t)
+	stager, err := OpenStager(Options{Directory: dir, MaxBytes: 4096})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer stager.Close()
+	session, err := stager.Begin(context.Background(), fixtureID, []string{key}, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	artifact, err := session.Finalize()
+	if err != nil {
+		t.Fatal(err)
+	}
+	file, err := os.OpenFile(filepath.Join(dir, artifact.RelativePath), os.O_WRONLY, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := file.WriteAt([]byte("x"), 0); err != nil {
+		t.Fatal(err)
+	}
+	if err := file.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := stager.Verify(artifact.RelativePath, artifact.CiphertextSize, artifact.CiphertextSHA256); err == nil {
+		t.Fatal("tampered ciphertext passed hash verification")
 	}
 }
 
@@ -383,5 +417,63 @@ func TestStagerCancelledWriterCannotFinalize(t *testing.T) {
 	}
 	if err := session.Abort(); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestStagerReconcilesInterruptedPartialAndReclaimsBudget(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "staging")
+	if err := os.Mkdir(dir, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, fixtureID+".partial"), []byte("incomplete"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	stager, err := OpenStager(Options{Directory: dir, MaxBytes: 1024})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer stager.Close()
+	if err := stager.ReconcilePartials(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, fixtureID+".partial")); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("interrupted partial remains: %v", err)
+	}
+	if stager.used != 0 {
+		t.Fatalf("partial budget remains reserved: %d", stager.used)
+	}
+}
+
+func TestStagerQuarantinesUncatalogedFinalCiphertext(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "staging")
+	_, key := recipient(t)
+	stager, err := OpenStager(Options{Directory: dir, MaxBytes: 4096})
+	if err != nil {
+		t.Fatal(err)
+	}
+	session, err := stager.Begin(context.Background(), fixtureID, []string{key}, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	artifact, err := session.Finalize()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := stager.QuarantineUncataloged(map[string]bool{}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, fixtureID+".orphan")); err != nil {
+		t.Fatalf("orphaned ciphertext was lost: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, artifact.RelativePath)); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("uncataloged ciphertext remains eligible: %v", err)
+	}
+	if err := stager.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if reopened, err := OpenStager(Options{Directory: dir, MaxBytes: 4096}); err != nil {
+		t.Fatalf("quarantine cannot be reopened: %v", err)
+	} else {
+		_ = reopened.Close()
 	}
 }

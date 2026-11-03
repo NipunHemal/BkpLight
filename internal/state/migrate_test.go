@@ -2,7 +2,9 @@ package state
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -12,16 +14,60 @@ import (
 func TestFoundationSchema(t *testing.T) {
 	s := openTestStore(t)
 	var version, count int
-	if err := s.db.QueryRow("PRAGMA user_version").Scan(&version); err != nil || version != 1 {
+	if err := s.db.QueryRow("PRAGMA user_version").Scan(&version); err != nil || version != 2 {
 		t.Fatalf("schema version %d: %v", version, err)
 	}
 	if err := s.db.QueryRow("SELECT count(*) FROM schema_migrations WHERE version=1 AND length(checksum)=64").Scan(&count); err != nil || count != 1 {
 		t.Fatalf("ledger: %d %v", count, err)
 	}
-	for _, table := range []string{"config_revisions", "active_config", "job_revisions", "runs", "run_commands", "events", "channel_revisions", "deliveries", "health_probe"} {
+	for _, table := range []string{"config_revisions", "active_config", "job_revisions", "runs", "run_commands", "events", "channel_revisions", "deliveries", "health_probe", "artifacts"} {
 		if _, err := s.db.Exec("SELECT * FROM " + table + " LIMIT 0"); err != nil {
 			t.Errorf("missing %s: %v", table, err)
 		}
+	}
+}
+
+func TestExistingV1StateUpgradesToArtifactSchema(t *testing.T) {
+	ms, err := loadMigrations()
+	if err != nil {
+		t.Fatal(err)
+	}
+	directory := t.TempDir()
+	path := filepath.Join(directory, "state.db")
+	db, err := sql.Open("sqlite", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(string(ms[0].sql)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec("INSERT INTO schema_migrations(version,checksum,applied_at) VALUES(1,?,1)", fmt.Sprintf("%x", sha256.Sum256(ms[0].sql))); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec("PRAGMA user_version=1"); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chmod(path, 0600); err != nil {
+		t.Fatal(err)
+	}
+	store, err := Open(context.Background(), Options{Directory: directory})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer store.Close()
+	var version int
+	if err := store.db.QueryRow("PRAGMA user_version").Scan(&version); err != nil || version != 2 {
+		t.Fatalf("upgraded version %d: %v", version, err)
+	}
+	if _, err := store.db.Exec("SELECT * FROM artifacts LIMIT 0"); err != nil {
+		t.Fatal(err)
+	}
+	backups, err := filepath.Glob(filepath.Join(directory, "backup-*.db"))
+	if err != nil || len(backups) != 1 {
+		t.Fatalf("missing pre-upgrade state backup: %v %v", backups, err)
 	}
 }
 
@@ -33,7 +79,7 @@ func TestMissingMigrationLedgerRejected(t *testing.T) {
 	rejectMutatedDatabase(t, "DROP TABLE schema_migrations")
 }
 func TestLedgerVersionMismatchRejected(t *testing.T) {
-	rejectMutatedDatabase(t, "UPDATE schema_migrations SET version=2")
+	rejectMutatedDatabase(t, "UPDATE schema_migrations SET version=3 WHERE version=2")
 }
 func TestZeroVersionNonemptyRejected(t *testing.T) { rejectMutatedDatabase(t, "PRAGMA user_version=0") }
 
@@ -82,7 +128,7 @@ func upgrades(t *testing.T, sql string) []migration {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return append(ms, migration{version: 2, sql: []byte(sql)})
+	return append(ms, migration{version: len(ms) + 1, sql: []byte(sql)})
 }
 
 func TestMigrationBackupRestore(t *testing.T) {
@@ -95,7 +141,7 @@ func TestMigrationBackupRestore(t *testing.T) {
 	}
 	var version int
 	s.db.QueryRow("PRAGMA user_version").Scan(&version)
-	if version != 2 {
+	if version != 3 {
 		t.Fatalf("version=%d", version)
 	}
 	files, err := filepath.Glob(filepath.Join(s.directory.Name(), "backup-*.db"))
@@ -121,7 +167,7 @@ func TestMigrationBackupRestore(t *testing.T) {
 	}
 	defer db.Close()
 	var tick int
-	if err = db.QueryRow("PRAGMA user_version").Scan(&version); err != nil || version != 1 {
+	if err = db.QueryRow("PRAGMA user_version").Scan(&version); err != nil || version != 2 {
 		t.Fatalf("restored version %d: %v", version, err)
 	}
 	if err = db.QueryRow("SELECT tick FROM health_probe").Scan(&tick); err != nil || tick != 73 {
@@ -141,7 +187,7 @@ func TestMigrationRollback(t *testing.T) {
 	var version, count int
 	s.db.QueryRow("PRAGMA user_version").Scan(&version)
 	s.db.QueryRow("SELECT count(*) FROM schema_migrations").Scan(&count)
-	if version != 1 || count != 1 {
+	if version != 2 || count != 2 {
 		t.Fatalf("partial migration persisted: version %d ledger %d", version, count)
 	}
 	if _, err = s.db.Exec("SELECT * FROM partial"); err == nil {
@@ -165,7 +211,7 @@ func TestMigrationBackupFailure(t *testing.T) {
 	}
 	var version int
 	s.db.QueryRow("PRAGMA user_version").Scan(&version)
-	if version != 1 {
+	if version != 2 {
 		t.Fatal("version changed after backup failure")
 	}
 	if _, err = s.db.Exec("SELECT * FROM second"); err == nil {

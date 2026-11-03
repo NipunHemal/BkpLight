@@ -57,6 +57,9 @@ func (s *Store) Recover(ctx context.Context) error {
 			return err
 		}
 	}
+	if _, err = tx.ExecContext(ctx, "UPDATE artifacts SET state='interrupted' WHERE state='writing'"); err != nil {
+		return unavailable()
+	}
 	var delivering int
 	if err = tx.QueryRowContext(ctx, "SELECT count(*) FROM runs WHERE state='delivering'").Scan(&delivering); err != nil {
 		return unavailable()

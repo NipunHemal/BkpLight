@@ -143,7 +143,7 @@ func (s *Stager) scan() error {
 	}
 	for _, name := range names {
 		base, suffix, ok := strings.Cut(name, ".")
-		if !ok || !validArtifactID(base) || (suffix != "age" && suffix != "partial") {
+		if !ok || !validArtifactID(base) || (suffix != "age" && suffix != "partial" && suffix != "orphan") {
 			return stageError(safeerr.Denied)
 		}
 		var stat unix.Stat_t
