@@ -1,6 +1,6 @@
 # Documentation index
 
-**Document status:** Active navigation; M01 reviewed and locally integrated into `main`; M02 planning in progress.
+**Document status:** Active navigation; M01 locally integrated; M02 T02-T03 locally verified, fixture-dependent tasks blocked.
 
 ## Purpose
 
@@ -8,14 +8,14 @@ Navigate project documentation and distinguish templates from approved or verifi
 
 ## Status and authority
 
-Latest update, 2026-11-03: T01-T09 and whole-branch review are closed. The user approved the local M01 fast-forward merge into `main`; the post-merge native WSL suite passed. M02 planning is underway. Earlier blocked-entry/pending-H2 statements below are historical. Push and deployment remain unapproved. See [current status](05-progress/current-status.md), [foundation evidence](06-testing/m01-foundation-evidence.md#m01-local-integration---2026-11-03) and the [task register](03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order).
+Latest update, 2026-11-03: M01 is locally integrated into `main`. The user authorized M02 inline execution; encrypted staging and artifact catalog tasks are committed on the isolated feature branch. The database fixture gate is blocked on private access, so backup producers and end-to-end M02 acceptance remain open. Push and deployment remain unapproved. See [current status](05-progress/current-status.md), [M02 local evidence](06-testing/m02-local-evidence.md) and the [M02 task register](03-planning/implementation-plans/2026-11-03-m02-encrypted-local-backups.md#file-map-and-task-register).
 
 - **Template:** structure exists; substantive information remains TODO.
 - **Draft:** content exists but is not approved.
 - **Approved:** dated explicit approval evidence is recorded.
 - **Verified:** a named check has current evidence; this is not blanket readiness.
 
-The user approved architecture v0.1/P01-P09 and ADR-001 on 2026-10-24. M01 subsequently received scoped H2, was implemented and reviewed, then locally merged into `main` under H3 on 2026-11-03. The milestone roadmap and plans are under 03-planning. M02's draft plan is not approved for code execution; unknown deployment inventory is not established by design approval. Push and H4 deployment remain unapproved.
+The user approved architecture v0.1/P01-P09 and ADR-001 on 2026-10-24. M01 subsequently received scoped H2, was implemented and reviewed, then locally merged into `main` under H3 on 2026-11-03. The milestone roadmap and plans are under 03-planning. The user authorized M02 execution in the current session; fixture-dependent source adapters remain blocked until their tool matrix is verified. Unknown deployment inventory is not established by design approval. Push and H4 deployment remain unapproved.
 
 ## 01 Requirements
 

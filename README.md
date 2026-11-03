@@ -1,6 +1,6 @@
 # BkpLight
 
-**Status:** M01 Linux foundation reviewed and locally merged into `main`; M02 planning is in progress. No production release.
+**Status:** M01 Linux foundation merged locally into `main`; M02 encrypted staging and artifact catalog are implemented on an isolated feature branch. Database fixture access blocks the remaining M02 tasks. No production release.
 
 ## Purpose
 
@@ -28,7 +28,7 @@ Read the agent instructions, documentation index and current status. Use accepte
 
 ## Next phase
 
-M01 task and whole-branch reviews are closed. The user approved its local fast-forward merge into `main`, and full native WSL tests passed after integration. M00 production inventory and M02 planning remain open. M02 application code needs an approved detailed plan and execution mode; push and deployment remain unapproved. See [foundation evidence](docs/06-testing/m01-foundation-evidence.md), [current status](docs/05-progress/current-status.md) and the [task register](docs/03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order).
+M01 task and whole-branch reviews are closed. The user approved its local fast-forward merge into `main`, and full native WSL tests passed after integration. The user then authorized M02 inline execution. M02's encrypted staging and catalog primitives pass local native tests; database-tool fixtures remain blocked on private server access. Backup commands still report `not_implemented`. Push and deployment remain unapproved. See [M02 evidence](docs/06-testing/m02-local-evidence.md), [current status](docs/05-progress/current-status.md) and the [M02 task register](docs/03-planning/implementation-plans/2026-11-03-m02-encrypted-local-backups.md#file-map-and-task-register).
 
 ## Related documentation
 

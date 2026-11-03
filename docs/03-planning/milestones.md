@@ -1,6 +1,6 @@
 # Milestones
 
-**Document status:** Milestone register v0.1, updated 2026-11-03; M01 locally integrated, M02 planning in progress.
+**Document status:** Milestone register v0.1, updated 2026-11-03; M01 locally integrated, M02 partial local execution blocked on database fixtures.
 
 ## Purpose
 
@@ -12,7 +12,7 @@ Define milestone entry criteria, work packages, deliverables and measurable exit
 |---|---|---|---|---|
 | M00 | P0 | TODO: planning owner / operator | backlog | Not produced |
 | M01 | P0 | Controller / task subagents | done; locally integrated | [Task register](implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order), [review and integration evidence](../06-testing/m01-foundation-evidence.md#m01-local-integration---2026-11-03) |
-| M02 | P0 | TODO: database owner / reviewer | planning | M00 source/tool/server inventory and detailed H2 plan outstanding |
+| M02 | P0 | TODO: database owner / reviewer | in_progress; fixture blocked | T02 `0d42a51`, T03 `a1cbc5d` with [local evidence](../06-testing/m02-local-evidence.md); T01/T04-T07 outstanding |
 | M03 | P0 | TODO: storage owner / reviewer | backlog | Not run |
 | M04 | P0 | TODO: recovery owner / reviewer | backlog | Not run |
 | M05 | P1 | TODO: orchestration owner / reviewer | backlog | Not run |

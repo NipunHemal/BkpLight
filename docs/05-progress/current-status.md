@@ -1,6 +1,12 @@
 # Current status
 
-**Document status:** M01 locally integrated into `main`; M02 planning in progress; release not_started, 2026-11-03.
+**Document status:** M01 locally integrated into `main`; M02 T02-T03 done with fixture-dependent tasks blocked; release not_started, 2026-11-03.
+
+## M02 local execution - 2026-11-03
+
+The user explicitly selected `using-git-worktrees` and `executing-plans` for M02. The existing linked worktree was retained on `feature/m02-backup-plan`; native WSL baseline passed. T02 bounded age-encrypted staging is committed as `0d42a51`. T03 SQLite artifact catalog, encrypted manifest and restart reconciliation primitives are committed as `a1cbc5d`. TDD RED/GREEN, focused/race tests, full native suite, vet/build and module verification are recorded in [M02 local evidence](../06-testing/m02-local-evidence.md). The M01 daemon still reports the backup engine as `not_implemented`; no real DB backup or remote provider operation has been run. T03 recovery primitives are not wired into daemon startup until T06.
+
+T01's disposable server fixture is blocked: password-free SSH was denied; local Docker was not runnable and native PostgreSQL/MongoDB dump tools were absent. The chat-disclosed password was not used. The user has been asked to rotate it and configure private access. T04-T07 depend on a tested matrix, so no source-adapter code or claims of M02 completion are made. No push, merge or deployment is authorized for this branch.
 
 ## M01 integration and M02 transition - 2026-11-03
 

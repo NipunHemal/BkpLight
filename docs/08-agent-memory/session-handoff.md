@@ -1,6 +1,12 @@
 # Session handoff
 
-**Document status:** M01 locally integrated into `main`; M02 planning in progress; release not_started, 2026-11-03.
+**Document status:** M01 locally integrated into `main`; M02 T02-T03 done, T01/T04-T07 blocked on fixture access; release not_started, 2026-11-03.
+
+## M02 execution handoff - 2026-11-03
+
+The user requested M02 implementation with `using-git-worktrees` and `executing-plans`; H2 applies to the M02 plan and inline mode. Reuse the existing linked worktree on `feature/m02-backup-plan`. Native WSL baseline passed. The ignored plan-scoped ledger at `.superpowers/sdd/2026-11-03-m02-encrypted-local-backups/progress.md` records rulings and official task-done lines. T02 `0d42a51` and T03 `a1cbc5d` are complete with [M02 local evidence](../06-testing/m02-local-evidence.md). T03 defines `Stager.Verify`, encrypted versioned manifests, SQLite v2 artifact state, `ReconcileArtifacts`, partial cleanup and orphan quarantine; T06 must wire startup recovery before backup execution is enabled. The M01 public backup endpoint remains unsupported.
+
+T01 is blocked: password-free SSH to the user-confirmed disposable server was denied, local Docker was not runnable, and WSL lacks `pg_dump`/`mongodump`. The chat-disclosed root password was not used. The user was asked to rotate it and configure private SSH-key access. Do not run T04/T05 source adapters or claim M02 complete until the fixture/tool matrix is tested. No push, M02 merge or deployment is authorized. After access is fixed: start Task 1 via the official script, record versions/image digests and run online-write fixtures; then resume T04-T07 in order. The primary planning checkout remains untouched.
 
 ## Current handoff - 2026-11-03
 

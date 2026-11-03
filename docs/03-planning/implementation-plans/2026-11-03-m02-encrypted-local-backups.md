@@ -10,7 +10,7 @@
 
 **Spec:** [Approved architecture](../../02-architecture/system-overview.md), [database design](../../02-architecture/database-design.md), [security design](../../02-architecture/security-design.md), [M02 milestone](../milestones.md#m02---online-encrypted-database-archives-p0), [PRD](../../01-requirements/PRD.md).
 
-**Document status:** Execution in progress, 2026-11-03. The user explicitly requested M02 implementation using `using-git-worktrees` and `executing-plans`, satisfying H2 for this M02 scope and mode. The user confirmed a disposable test server with permission to create temporary database containers and data. Password-free SSH was denied; no remote mutation occurred. A credential shared in chat must be rotated and replaced with private access outside chat. No credentials, host address or customer data belong in this plan.
+**Document status:** Execution blocked at Task 1, 2026-11-03; Tasks 2-3 complete on `feature/m02-backup-plan`. The user explicitly requested M02 implementation using `using-git-worktrees` and `executing-plans`, satisfying H2 for this M02 scope and mode. The user confirmed a disposable test server with permission to create temporary database containers and data. Password-free SSH was denied; no remote mutation occurred. A credential shared in chat was not used and must be rotated and replaced with private access outside chat. No credentials, host address or customer data belong in this plan.
 
 ## Global constraints and entry gates
 
@@ -36,10 +36,10 @@
 | Task | Status | Dependencies | Deliverable | Commit |
 |---|---|---|---|---|
 | T01 Fixture and compatibility gate | blocked | non-secret inventory; private access | tested engine/tool matrix and synthetic fixture harness | TODO |
-| T02 Encrypted staging and budget | in_progress | independent local synthetic fixtures; T01 for server tests | bounded ciphertext writer, private partial/finalize lifecycle | TODO |
-| T03 Artifact catalog and recovery | backlog | T02 | SQLite migration, atomic state transitions, restart reconciliation | TODO |
-| T04 PostgreSQL selected-database producer | backlog | T01-T03 | custom-format dumps with version/permission/scope evidence | TODO |
-| T05 Standalone MongoDB producer | backlog | T01-T03 | archive/gzip dumps with explicit live-consistency limit | TODO |
+| T02 Encrypted staging and budget | done | independent local synthetic fixtures; T01 for server tests | bounded ciphertext writer, private partial/finalize lifecycle | `0d42a51` |
+| T03 Artifact catalog and recovery | done | T02 | SQLite v2 migration, encrypted manifest, integrity check, restart primitives | `a1cbc5d` |
+| T04 PostgreSQL selected-database producer | blocked | T01-T03 | custom-format dumps with version/permission/scope evidence | TODO |
+| T05 Standalone MongoDB producer | blocked | T01-T03 | archive/gzip dumps with explicit live-consistency limit | TODO |
 | T06 M02 run orchestration and local control | backlog | T04-T05 | manual backup run, per-database outcomes and history | TODO |
 | T07 Integrated acceptance and review | backlog | T06 | end-to-end, fault and resource evidence | TODO |
 
@@ -136,7 +136,7 @@
 
 ## Current blockers and approval
 
-1. **Private access:** rotate the chat-disclosed password and configure a private SSH key outside chat before using the disposable server. The server is confirmed disposable; no remote connection or mutation has yet occurred.
+1. **Private access:** rotate the chat-disclosed password and configure a private SSH key outside chat before using the disposable server. A password-free SSH probe was denied; no remote mutation occurred. The disclosed password was not used.
 2. **Compatibility:** record actual production source versions/sizes separately from disposable fixture versions. Select and verify exact native tool, age library and image pins before H2.
 3. **Contract decisions:** resolve the M02 local-staged run state and artifact manifest schema in a reviewed H2 revision; keep later M03 remote commit semantics separate.
 4. **H2 scope:** the user's explicit M02 implementation request selected the executing-plans mode. Material changes outside approved architecture still reopen the affected approval; H3 integration and H4 deployment remain separate.
