@@ -1,16 +1,16 @@
 # M02 Encrypted Local Backups Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. **Draft: do not execute until the M02 fixture matrix, exact dependency versions, acceptance checks and H2 plan/mode approval are recorded.**
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. Task 1 requires safe fixture access; Task 2 can be verified independently with local synthetic data. Do not start source adapters before their compatibility matrix is tested.
 
 **Goal:** Produce bounded, encrypted local PostgreSQL and standalone MongoDB archives for selected databases while applications continue writing.
 
 **Architecture:** Reuse the M01 daemon, private SQLite owner, strict YAML and supervised native-tool runner. Each database produces a separate age-encrypted `.partial` artifact; successful producer exit, durable finalize and a committed catalog record are required before it becomes staged. Remote upload, restore, schedules, retention and notifications remain later milestones.
 
-**Tech Stack:** Go on Linux, SQLite, native `pg_dump` and `mongodump`, maintained age Go library, native WSL and disposable Docker fixture server. Exact source/tool/library/container versions: TODO after non-secret inventory and compatibility review.
+**Tech Stack:** Go on Linux, SQLite, native `pg_dump` and `mongodump`, age Go library v1.3.2, native WSL and disposable Docker fixture server. Exact source/tool/container versions: TODO after non-secret inventory and compatibility review.
 
 **Spec:** [Approved architecture](../../02-architecture/system-overview.md), [database design](../../02-architecture/database-design.md), [security design](../../02-architecture/security-design.md), [M02 milestone](../milestones.md#m02---online-encrypted-database-archives-p0), [PRD](../../01-requirements/PRD.md).
 
-**Document status:** Draft, 2026-11-03. The user authorized continuing M02 and confirmed a disposable test server with permission to create temporary database containers and data. M01's H2 does not approve M02 application code. No server access has been attempted; a credential shared in chat must be rotated and replaced with private access outside chat. No credentials, host address or customer data belong in this plan.
+**Document status:** Execution in progress, 2026-11-03. The user explicitly requested M02 implementation using `using-git-worktrees` and `executing-plans`, satisfying H2 for this M02 scope and mode. The user confirmed a disposable test server with permission to create temporary database containers and data. Password-free SSH was denied; no remote mutation occurred. A credential shared in chat must be rotated and replaced with private access outside chat. No credentials, host address or customer data belong in this plan.
 
 ## Global constraints and entry gates
 
@@ -20,8 +20,8 @@
 - Stream plaintext from the native producer to age encryption in memory. Persist encrypted bytes only, under a private staging directory and a configured aggregate cap plus free-space reserve.
 - The existing `process.Runner` requires canonical allowlisted executable paths, a complete explicit environment and a cancellation-aware stdout writer. Keep credentials out of arguments, logs, events, manifests and errors.
 - Keep source/database locks and global heavy-work ownership until the producer exits and is reaped. A failed database must not erase a sibling's completed artifact.
-- Before execution: record tested PostgreSQL/MongoDB server and tool versions, image digests, architecture, fixture network, resource budget, least-privilege accounts and exact age library pin. Production versions/sizes remain TODO and are not inferred from disposable fixtures.
-- H2 must name this plan revision and select subagent-driven-development or executing-plans. Use a fresh M02 worktree and baseline verification. No push, merge or deployment is covered by H2.
+- Before source-adapter execution: record tested PostgreSQL/MongoDB server and tool versions, image digests, architecture, fixture network, resource budget and least-privilege accounts. The age library pin is v1.3.2, selected from the [official release](https://github.com/FiloSottile/age/releases/tag/v1.3.2) and verified with `go mod verify`. Production versions/sizes remain TODO and are not inferred from disposable fixtures.
+- The existing linked worktree on `feature/m02-backup-plan` is the isolated workspace; the native WSL baseline passed. H2 covers local M02 execution using `executing-plans`, not push, merge or deployment.
 
 ## Review focus
 
@@ -36,14 +36,14 @@
 | Task | Status | Dependencies | Deliverable | Commit |
 |---|---|---|---|---|
 | T01 Fixture and compatibility gate | blocked | non-secret inventory; private access | tested engine/tool matrix and synthetic fixture harness | TODO |
-| T02 Encrypted staging and budget | backlog | T01 | bounded ciphertext writer, private partial/finalize lifecycle | TODO |
+| T02 Encrypted staging and budget | in_progress | independent local synthetic fixtures; T01 for server tests | bounded ciphertext writer, private partial/finalize lifecycle | TODO |
 | T03 Artifact catalog and recovery | backlog | T02 | SQLite migration, atomic state transitions, restart reconciliation | TODO |
 | T04 PostgreSQL selected-database producer | backlog | T01-T03 | custom-format dumps with version/permission/scope evidence | TODO |
 | T05 Standalone MongoDB producer | backlog | T01-T03 | archive/gzip dumps with explicit live-consistency limit | TODO |
 | T06 M02 run orchestration and local control | backlog | T04-T05 | manual backup run, per-database outcomes and history | TODO |
 | T07 Integrated acceptance and review | backlog | T06 | end-to-end, fault and resource evidence | TODO |
 
-## Task 01 — Fixture and compatibility gate
+### Task 1: Fixture and compatibility gate
 
 **Files:** Create `tests/integration/backup_fixture_linux_test.go` and `docs/06-testing/m02-compatibility-matrix.md`; update `docs/03-planning/development-environment.md` with repeatable non-secret fixture commands. No database installer or production Docker files are part of this task.
 
@@ -57,11 +57,11 @@
 
 **Exit:** A reviewed, reproducible matrix exists. Unknown production versions stay explicitly unknown; fixture compatibility does not imply production support.
 
-## Task 02 — Encrypted staging and aggregate budget
+### Task 2: Encrypted staging and aggregate budget
 
 **Files:** Create `internal/archive/staging_linux.go`, `internal/archive/staging_linux_test.go`, `internal/archive/encrypt.go`, `internal/archive/encrypt_test.go`. Modify `go.mod`/`go.sum` only for the reviewed age library pin. Extend the existing config tests only if a new field is truly needed.
 
-**Interfaces:** `Stager.Begin(ctx context.Context, artifactID string, reserveBytes int64) (io.WriteCloser, error)` returns a cancellation-aware writer; `Finalize(ctx context.Context, artifactID string) (ArtifactFile, error)` returns relative path, ciphertext size and SHA-256 only after file sync and atomic rename; `Abort(ctx context.Context, artifactID string) error` records/cleans only that partial. Exact type signatures and capacity reservation ownership must be finalized in the H2 revision after reviewing the M01 process runner.
+**Interfaces:** `OpenStager(Options) (*Stager, error)` acquires a private no-follow directory and counts retained bytes. `Stager.Begin(ctx context.Context, artifactID string, recipients []string, reserveBytes int64) (*Session, error)` reserves capacity and creates only ciphertext. `Session.Write([]byte)`, `Session.Finalize() (ArtifactFile, error)` and `Session.Abort() error` own one partial lifecycle. Finalize returns relative path, ciphertext size and SHA-256 only after file and directory sync plus no-replace rename. Context cancellation is checked on writes/finalize; the M01 process runner owns producer cancellation and reaping. This Task 2 ruling is recorded in the execution ledger.
 
 - [ ] Write failing tests for ciphertext-only persistence, valid age decryption with a fixture identity, wrong-recipient failure, producer-write error propagation, cap/free-space exhaustion, concurrent writers, private permissions, symlink/ancestor substitution and rename/fsync interruption.
 - [ ] Run: `go test ./internal/archive -count=1 -timeout 120s`; expect RED for missing behavior.
@@ -71,7 +71,7 @@
 
 **Exit:** No plaintext staging file exists, failure cannot finalize, and concurrent writers cannot exceed the configured aggregate budget.
 
-## Task 03 — Artifact catalog and restart reconciliation
+### Task 3: Artifact catalog and restart reconciliation
 
 **Files:** Create `internal/state/migrations/002_artifacts.sql`, `internal/state/artifacts.go`, `internal/state/artifacts_test.go`, `internal/archive/reconcile_linux.go`, `internal/archive/reconcile_linux_test.go`; modify `internal/state/types.go` and startup recovery only where required.
 
@@ -84,7 +84,7 @@
 
 **Exit:** Catalog success and on-disk state agree after crash recovery; neither a `.partial` nor a missing file is reported staged.
 
-## Task 04 — PostgreSQL producer
+### Task 4: PostgreSQL producer
 
 **Files:** Create `internal/backup/postgres.go`, `internal/backup/postgres_test.go`; extend `tests/integration/backup_fixture_linux_test.go` and `docs/06-testing/m02-compatibility-matrix.md`.
 
@@ -97,7 +97,7 @@
 
 **Exit:** A valid per-database custom archive is staged only after the producer succeeds; unsupported/incomplete exports fail visibly.
 
-## Task 05 — Standalone MongoDB producer
+### Task 5: Standalone MongoDB producer
 
 **Files:** Create `internal/backup/mongo.go`, `internal/backup/mongo_test.go`; extend `tests/integration/backup_fixture_linux_test.go` and the compatibility matrix.
 
@@ -110,7 +110,7 @@
 
 **Exit:** The local archive can be opened by the matching fixture tool; metadata still discloses live-backup limits.
 
-## Task 06 — Manual run orchestration and local control
+### Task 6: Manual run orchestration and local control
 
 **Files:** Create `internal/backup/service.go`, `internal/backup/service_test.go`; modify `internal/app/serve_linux.go`, `internal/app/health_linux.go`, `internal/control/server_linux.go`, `internal/control/types.go`, `internal/cli/run.go` and their tests only for the M02 manual backup path.
 
@@ -123,7 +123,7 @@
 
 **Exit:** Manual requests yield truthful per-database local artifact history, and all unfinished operations fail or interrupt visibly.
 
-## Task 07 — Integrated acceptance, review and verification
+### Task 7: Integrated acceptance, review and verification
 
 **Files:** Update `docs/06-testing/m02-foundation-evidence.md`, `docs/05-progress/current-status.md`, `docs/08-agent-memory/session-handoff.md`, `README.md` and only necessary acceptance documentation.
 
@@ -139,7 +139,7 @@
 1. **Private access:** rotate the chat-disclosed password and configure a private SSH key outside chat before using the disposable server. The server is confirmed disposable; no remote connection or mutation has yet occurred.
 2. **Compatibility:** record actual production source versions/sizes separately from disposable fixture versions. Select and verify exact native tool, age library and image pins before H2.
 3. **Contract decisions:** resolve the M02 local-staged run state and artifact manifest schema in a reviewed H2 revision; keep later M03 remote commit semantics separate.
-4. **Human gate:** approve the exact revised M02 plan and execution mode under H2. The instruction to continue M02 authorizes planning and preparation but does not waive the repo's explicit plan/mode gate.
+4. **H2 scope:** the user's explicit M02 implementation request selected the executing-plans mode. Material changes outside approved architecture still reopen the affected approval; H3 integration and H4 deployment remain separate.
 
 ## Related documentation
 
