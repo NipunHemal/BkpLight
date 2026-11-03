@@ -15,7 +15,7 @@ Latest update, 2026-11-03: T01-T09 and whole-branch review are closed. The user 
 - **Approved:** dated explicit approval evidence is recorded.
 - **Verified:** a named check has current evidence; this is not blanket readiness.
 
-The user approved architecture v0.1/P01-P09 and ADR-001 on 2026-10-24, then requested a milestone roadmap using Superpowers writing-plans with no implementation. The roadmap, milestone exit criteria and dependencies are populated under 03-planning. The detailed M01 plan is prepared for review; H2/H3/H4 remain outstanding; unknown deployment inventory is not established by design approval. The subsequent Git setup request authorizes repository initialization, safe setup commits and task-wise commit policy, with no application features, merge or deployment.
+The user approved architecture v0.1/P01-P09 and ADR-001 on 2026-10-24. M01 subsequently received scoped H2, was implemented and reviewed, then locally merged into `main` under H3 on 2026-11-03. The milestone roadmap and plans are under 03-planning. M02's draft plan is not approved for code execution; unknown deployment inventory is not established by design approval. Push and H4 deployment remain unapproved.
 
 ## 01 Requirements
 
@@ -48,6 +48,7 @@ The user approved architecture v0.1/P01-P09 and ADR-001 on 2026-10-24, then requ
 - [Task dependencies](03-planning/task-dependencies.md)
 - [Implementation plans](03-planning/implementation-plans/README.md)
 - [M01 detailed foundation plan](03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md)
+- [M02 draft encrypted local backup plan](03-planning/implementation-plans/2026-11-03-m02-encrypted-local-backups.md)
 
 ## 04 Decisions
 
