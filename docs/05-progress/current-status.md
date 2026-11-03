@@ -1,6 +1,10 @@
 # Current status
 
-**Document status:** M01 T01-T09 done on the isolated feature branch; integration/release not_started, 2026-10-26.
+**Document status:** M01 locally integrated into `main`; M02 planning in progress; release not_started, 2026-11-03.
+
+## M01 integration and M02 transition - 2026-11-03
+
+The user explicitly approved merging M01 into `main` and continuing M02. The managed worktree switched to `main`, then `git merge --ff-only feature/m01-secure-foundation` advanced `main` from `7a5ba9e` to `a9e858cf73cde1a9aacdd5d3b5437cd844c425a4`. Native WSL `go test ./... -count=1 -timeout 120s` passed before and after the merge; see [integration evidence](../06-testing/m01-foundation-evidence.md#m01-local-integration---2026-11-03). The primary planning checkout was unchanged. H3 covers this local merge only. M02 is in planning; M00 database/server inventory and M02 H2 for an exact plan and execution mode remain open. No push, production operations or deployment are authorized.
 
 ## M01 foundation verified on feature branch - 2026-10-26
 

@@ -1,6 +1,10 @@
 # Session handoff
 
-**Document status:** M01 T01-T09 done on isolated feature branch; integration/release not_started, 2026-10-26.
+**Document status:** M01 locally integrated into `main`; M02 planning in progress; release not_started, 2026-11-03.
+
+## Current handoff - 2026-11-03
+
+The user authorized the local M01-to-`main` merge and continuation into M02. In the managed worktree, `main` fast-forwarded from `7a5ba9e` to `a9e858cf73cde1a9aacdd5d3b5437cd844c425a4`. Full native WSL tests passed before and after the merge. The primary planning checkout was untouched. [Integration evidence](../06-testing/m01-foundation-evidence.md#m01-local-integration---2026-11-03) records the command and limits. The managed M01 worktree and merged feature branch remain for provenance; no remote is configured. M02 requires a detailed plan and scoped H2 before application-code execution. M00 non-secret source/tool/server inventory remains incomplete. No push, real backup, deployment or H4 approval.
 
 ## Current M01 handoff - 2026-10-26
 

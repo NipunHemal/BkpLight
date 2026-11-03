@@ -1,6 +1,6 @@
 # Milestones
 
-**Document status:** Milestone register v0.1, 2026-10-24; planned against approved architecture, M01 execution authorized 2026-10-25 but blocked at entry; later milestones unapproved.
+**Document status:** Milestone register v0.1, updated 2026-11-03; M01 locally integrated, M02 planning in progress.
 
 ## Purpose
 
@@ -11,8 +11,8 @@ Define milestone entry criteria, work packages, deliverables and measurable exit
 | ID | Priority | Owner / reviewer | Status | Completion evidence |
 |---|---|---|---|---|
 | M00 | P0 | TODO: planning owner / operator | backlog | Not produced |
-| M01 | P0 | Controller / task subagents | in_progress | [Detailed plan v0.1](implementation-plans/2026-10-24-m01-secure-service-foundation.md); H2 and M01-only synthetic fixture disposition recorded 2026-10-25; T01 ready, runtime checks not run |
-| M02 | P0 | TODO: database owner / reviewer | backlog | Not run |
+| M01 | P0 | Controller / task subagents | done; locally integrated | [Task register](implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order), [review and integration evidence](../06-testing/m01-foundation-evidence.md#m01-local-integration---2026-11-03) |
+| M02 | P0 | TODO: database owner / reviewer | planning | M00 source/tool/server inventory and detailed H2 plan outstanding |
 | M03 | P0 | TODO: storage owner / reviewer | backlog | Not run |
 | M04 | P0 | TODO: recovery owner / reviewer | backlog | Not run |
 | M05 | P1 | TODO: orchestration owner / reviewer | backlog | Not run |
@@ -40,9 +40,9 @@ Roles are responsibilities, not assumed staffing or delegation permission. These
 
 **Entry:** M00 exit, scoped H2, authorized workspace/bootstrap and known baseline.
 
-- [ ] M01.1 Implement strict versioned YAML, secret references and redacted immutable config revisions with safe startup validation.
-- [ ] M01.2 Provide local CLI/Unix IPC and bounded idempotent operation handling; establish SQLite migrations, singleton ownership, state transitions, event outbox and history queries.
-- [ ] M01.3 Add structured rotating/redacted logs, basic health, bounded native-process supervision and graceful stop primitives needed by later tasks.
+- [x] M01.1 Implement strict versioned YAML, secret references and redacted immutable config revisions with safe startup validation.
+- [x] M01.2 Provide local CLI/Unix IPC and bounded idempotent operation handling; establish SQLite migrations, singleton ownership, state transitions, event outbox and history queries.
+- [x] M01.3 Add structured rotating/redacted logs, basic health, bounded native-process supervision and graceful stop primitives needed by later tasks.
 
 **Deliverables:** testable daemon/CLI foundation, metadata migration baseline, config examples, shared error/operation contracts and development fixture harness.
 

@@ -1,12 +1,14 @@
 # Agent instructions
 
-**Document status:** Active; H1/H2 held; M01 T01-T09 done on isolated feature branch; integration/release not_started; merges and deployment unapproved.
+**Document status:** Active; M01 T01-T09 done and locally merged into `main` on 2026-11-03 under H3; M02 planning in progress; release not_started.
 
 ## Purpose
 
 Guide agents through verified project context, scoped work and evidence-based completion. Documentation templates and conversational proposals are not approved requirements or architecture.
 
 ## Current authorization and approval gates
+
+- Current disposition (2026-11-03): the user explicitly said "yes merge m1 to main and continue m2". H3 for the local M01-to-`main` fast-forward merge is satisfied. `main` advanced from `7a5ba9e` to `a9e858c`; native WSL full tests passed after the merge. The primary planning checkout was untouched. M02 planning is authorized; its exact implementation plan and execution mode still require H2 before application code. M00 production inventory is incomplete. No push or deployment was authorized; H4 remains outstanding. See [integration evidence](docs/06-testing/m01-foundation-evidence.md#m01-local-integration---2026-11-03).
 
 - Current implementation status (2026-10-26): M01 T01-T09 are done on `feature/m01-secure-foundation`; whole-branch review, scoped fix re-review and fresh native WSL verification are recorded in [foundation evidence](docs/06-testing/m01-foundation-evidence.md#final-review-and-controller-verification---2026-10-26). M00 production inventory is incomplete. H3/H4 remain unapproved; do not merge, push or deploy. Earlier entries below are retained approval and environment history.
 

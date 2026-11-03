@@ -1,6 +1,6 @@
 # BkpLight
 
-**Status:** M01 Linux foundation implemented; T09 independent review pending. No production release.
+**Status:** M01 Linux foundation reviewed and locally merged into `main`; M02 planning is in progress. No production release.
 
 ## Purpose
 
@@ -28,7 +28,7 @@ Read the agent instructions, documentation index and current status. Use accepte
 
 ## Next phase
 
-H2 covers only the approved M01 synthetic fixture plan and subagent execution. Independent T09 and whole-branch review remain pending. M00 production inventory and later milestones remain open; merge/push/deployment need their applicable approval. See [foundation evidence](docs/06-testing/m01-foundation-evidence.md), [current status](docs/05-progress/current-status.md) and the [task register](docs/03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order).
+M01 task and whole-branch reviews are closed. The user approved its local fast-forward merge into `main`, and full native WSL tests passed after integration. M00 production inventory and M02 planning remain open. M02 application code needs an approved detailed plan and execution mode; push and deployment remain unapproved. See [foundation evidence](docs/06-testing/m01-foundation-evidence.md), [current status](docs/05-progress/current-status.md) and the [task register](docs/03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order).
 
 ## Related documentation
 

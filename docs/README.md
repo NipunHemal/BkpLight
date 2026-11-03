@@ -1,6 +1,6 @@
 # Documentation index
 
-**Document status:** Active navigation; M01 foundation implemented under H2, T09 independent review pending.
+**Document status:** Active navigation; M01 reviewed and locally integrated into `main`; M02 planning in progress.
 
 ## Purpose
 
@@ -8,7 +8,7 @@ Navigate project documentation and distinguish templates from approved or verifi
 
 ## Status and authority
 
-Latest update, 2026-10-26: H2 covers M01 synthetic fixtures and subagent execution. Native WSL entry is resolved; T01-T08 are reviewed and T09 daemon composition/acceptance is in_review. Earlier blocked-entry/pending-H2 statements below are historical. No merge/deployment approval. See [current status](05-progress/current-status.md), [foundation evidence](06-testing/m01-foundation-evidence.md) and the [task register](03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order).
+Latest update, 2026-11-03: T01-T09 and whole-branch review are closed. The user approved the local M01 fast-forward merge into `main`; the post-merge native WSL suite passed. M02 planning is underway. Earlier blocked-entry/pending-H2 statements below are historical. Push and deployment remain unapproved. See [current status](05-progress/current-status.md), [foundation evidence](06-testing/m01-foundation-evidence.md#m01-local-integration---2026-11-03) and the [task register](03-planning/implementation-plans/2026-10-24-m01-secure-service-foundation.md#task-register-and-order).
 
 - **Template:** structure exists; substantive information remains TODO.
 - **Draft:** content exists but is not approved.
