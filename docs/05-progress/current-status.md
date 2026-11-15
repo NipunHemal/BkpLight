@@ -4,7 +4,7 @@
 
 ## M02 partial integration - 2026-11-15
 
-The user explicitly requested the GitHub origin, a push of the feature branch and integration of the latest changes into `main`. The target repository reported no refs at preflight. The linked worktree and other checkouts had no uncommitted changes. The native WSL full `go test ./... -count=1 -timeout 120s` passed on the M02 branch. Local `main` fast-forwarded from `924b123` to `3f688b3`; no force operation or branch cleanup was used. Publication status: TODO record actual push result. M02 is still incomplete: T01 fixture access, T04-T05 database producers, T06 orchestration and T07 acceptance remain. The backup engine remains `not_implemented`; no deployment was authorized.
+The user explicitly requested the GitHub origin, a push of the feature branch and integration of the latest changes into `main`. The target repository reported no refs at preflight. The linked worktree and other checkouts had no uncommitted changes. The native WSL full `go test ./... -count=1 -timeout 120s` passed on the M02 branch and again after its local integration. Local `main` fast-forwarded from `924b123` to `3f688b3`; no force operation or branch cleanup was used. GitHub accepted `main` at `94f2744` and `feature/m02-backup-plan` at `3f688b3`; `git ls-remote` verified both refs. The older planning branch had two unique documentation commits, so its history and records were also merged into `main` for this all-changes request. M02 is still incomplete: T01 fixture access, T04-T05 database producers, T06 orchestration and T07 acceptance remain. The backup engine remains `not_implemented`; no deployment was authorized.
 
 ## M02 local execution - 2026-11-03
 
@@ -95,6 +95,12 @@ Next: authorize/provide Linux Go 1.26.10 and a C compiler, qualify a native Linu
 This section supersedes the earlier planning-session workspace and next-action statements below; those remain historical evidence. WT-M01 preparation is complete on `feature/m01-secure-foundation` in `C:/Users/USER/.codex/worktrees/m01-secure-foundation/BkpLight`, based on plan commit `2aa208057f4ad6a44bf96260c55710126fd55a31`. Original checkout and main are unchanged.
 
 The user authorized isolated workspace setup and preflight checks only. No feature implementation or installation occurred. [Preflight evidence](../06-testing/m01-workspace-preflight.md) records available Ubuntu WSL, missing Linux Go/C compiler on PATH, Windows Go version mismatch, published dependency pins and absence of application tests. Documentation-only verification applies; runtime tests are not passing claims. T01-T09 remain backlog. Next: resolve the Linux fixture/toolchain and M00 disposition, then obtain plan/mode execution approval. No merge or deployment is approved.
+
+## Superpowers restoration - 2026-10-25
+
+The user explicitly authorized skill restoration only. Codex CLI 0.157.0 on Windows NT 10.0.26300.0 now discovers 15 enabled official Superpowers skills through the user-level junction documented in AGENTS.md. A fresh `skills/list` request with `forceReload: true` for this workspace returned zero discovery errors; all 11 lifecycle skills have readable SKILL.md files with name/description frontmatter. The official source checkout is v7.0.1 at `2ce8aa15d05bd57213e6f746f953aafb7ded7a8b`. The marketplace download alone did not establish discovery: remote registration returned HTTP 404 `Plugin not found`. A subsequent session refresh exposed the remote marketplace copy too. Both local and remote marketplace registrations are now explicitly disabled to prevent duplicate discovery alongside the native junction; downloaded caches are preserved. Fresh CLI discovery after this change again returned exactly 15 enabled Superpowers skills and no errors. Existing project skills are preserved.
+
+The harmless planning load reads the official writing-plans instructions without creating a plan or executing tasks. Project plan paths and H2/mode gates remain authoritative. The unresolved M00/M01 fixture-only disposition remains unresolved. No application code, dependency installation, implementation, merge or deployment is authorized by restoration. Restart existing Codex sessions to refresh their initial skill catalog/configuration; fresh CLI discovery already passes.
 
 ## Purpose
 

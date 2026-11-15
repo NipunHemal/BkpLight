@@ -4,7 +4,7 @@
 
 ## M02 partial integration handoff - 2026-11-15
 
-The user authorized GitHub origin publication of the M02 feature branch and local integration of its latest changes into `main`. The remote reported no refs at preflight. The existing M02 worktree was clean, other linked checkouts had no uncommitted changes, and the native WSL full suite passed. Local `main` fast-forwarded from `924b123` to `3f688b3`. Publication status: TODO record actual push result. The M02 fixture gate and T04-T07 remain open; do not describe this integration as M02 completion or enable backup capability before T06 and T07 evidence. The chat-disclosed credential remains unused; rotate it and establish private SSH access outside chat. No production deployment is approved.
+The user authorized GitHub origin publication of the M02 feature branch and local integration of its latest changes into `main`. The remote reported no refs at preflight. The existing M02 worktree was clean, other linked checkouts had no uncommitted changes, and the native WSL full suite passed on the feature and integrated trees. Local `main` fast-forwarded from `924b123` to `3f688b3`. GitHub accepted `main` at `94f2744` and `feature/m02-backup-plan` at `3f688b3`; remote refs were verified. Two unique historical planning-document commits were then merged into `main` so their records are retained. The M02 fixture gate and T04-T07 remain open; do not describe this integration as M02 completion or enable backup capability before T06 and T07 evidence. The chat-disclosed credential remains unused; rotate it and establish private SSH access outside chat. No production deployment is approved.
 
 ## M02 execution handoff - 2026-11-03
 
@@ -97,6 +97,12 @@ Next: authorize/provide Linux Go 1.26.10 and a C compiler, qualify a native Linu
 This section supersedes the earlier planning-session workspace and next-action statements below; those remain historical evidence. WT-M01 preparation is complete on `feature/m01-secure-foundation` in `C:/Users/USER/.codex/worktrees/m01-secure-foundation/BkpLight`, based on plan commit `2aa208057f4ad6a44bf96260c55710126fd55a31`. Original checkout and main are unchanged.
 
 The user authorized isolated workspace setup and preflight checks only. No feature implementation or installation occurred. [Preflight evidence](../06-testing/m01-workspace-preflight.md) records available Ubuntu WSL, missing Linux Go/C compiler on PATH, Windows Go version mismatch, published dependency pins and absence of application tests. Documentation-only verification applies; runtime tests are not passing claims. T01-T09 remain backlog. Next: resolve the Linux fixture/toolchain and M00 disposition, then obtain plan/mode execution approval. No merge or deployment is approved.
+
+## Skill restoration handoff - 2026-10-25
+
+Superpowers restoration only was explicitly authorized and completed using the official v7.0.1 checkout at `2ce8aa15d05bd57213e6f746f953aafb7ded7a8b` and the user discovery junction documented in AGENTS.md. Fresh Codex CLI 0.157.0 `skills/list` discovery returned 15 enabled official skills, including all 11 lifecycle skills, with no errors. Marketplace remote registration failed with `Plugin not found`; a subsequent session refresh exposed the remote marketplace copy too, so both local and remote marketplace registrations are now explicitly disabled to prevent duplicate discovery alongside the native junction. Cached files are preserved; fresh CLI discovery after disabling both returned exactly 15 enabled official skills and no errors. Existing sessions should restart to refresh skill metadata/configuration. Native invocation uses `$writing-plans` and other manifest names; `superpowers:*` in lifecycle documents denotes the official family.
+
+Restoration grants no H2/H3/H4, implementation, delegation, merge or deployment permission. The M00/M01 fixture-only prerequisite disposition remains unresolved. Resume no application work from this setup task; preserve the current plan and its backlog states.
 
 ## Purpose
 
