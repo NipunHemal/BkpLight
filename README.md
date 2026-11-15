@@ -1,6 +1,6 @@
 # BkpLight
 
-**Status:** M01 Linux foundation merged locally into `main`; M02 encrypted staging and artifact catalog are implemented on an isolated feature branch. Database fixture access blocks the remaining M02 tasks. No production release.
+**Status:** M01 foundation and partial M02 encrypted staging/catalog work are merged locally into `main`. Database fixture access blocks the remaining M02 tasks. No production release.
 
 ## Purpose
 

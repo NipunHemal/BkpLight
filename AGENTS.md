@@ -1,12 +1,14 @@
 # Agent instructions
 
-**Document status:** Active; M01 locally merged into `main`; M02 H2 execution authorized on an isolated feature branch, T02-T03 done, T01 fixture access blocked; release not_started.
+**Document status:** Active; M02 partial work locally merged into `main` under H3 on 2026-11-15; T02-T03 done, T01 fixture access blocked; release not_started.
 
 ## Purpose
 
 Guide agents through verified project context, scoped work and evidence-based completion. Documentation templates and conversational proposals are not approved requirements or architecture.
 
 ## Current authorization and approval gates
+
+- Latest disposition (2026-11-15): the user explicitly requested adding `origin` at `https://github.com/NipunHemal/BkpLight.git`, pushing the feature branch and merging the latest changes to `main`. This grants H3 for the local M02 fast-forward and publication of those refs, despite M02 remaining incomplete. `main` fast-forwarded from `924b123` to `3f688b3`; the native WSL full suite passed before integration. This authorization does not mark M02 complete or approve production deployment. See [current status](docs/05-progress/current-status.md) for publication evidence and remaining tasks.
 
 - M02 disposition (2026-11-03): the user explicitly requested M02 implementation with `using-git-worktrees` and `executing-plans`, satisfying H2 for this M02 plan and inline mode and superseding historical setup-only code restrictions within M02. The existing linked worktree on `feature/m02-backup-plan` was reused; native WSL baseline passed. T02 encrypted staging `0d42a51` and T03 catalog/reconciliation `a1cbc5d` have RED/GREEN and fresh focused/full/race evidence in [M02 local evidence](docs/06-testing/m02-local-evidence.md). T01 is blocked: password-free SSH to the user-confirmed disposable server was denied; local Docker and native DB tools were unavailable. The credential shared in chat was not used and must be rotated. Do not start T04-T07 source-dependent work until the fixture/tool matrix is tested. No push, merge or deployment is authorized for M02.
 

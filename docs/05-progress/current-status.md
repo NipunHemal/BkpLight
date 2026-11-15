@@ -1,6 +1,10 @@
 # Current status
 
-**Document status:** M01 locally integrated into `main`; M02 T02-T03 done with fixture-dependent tasks blocked; release not_started, 2026-11-03.
+**Document status:** M02 partial work locally integrated into `main`; T02-T03 done with fixture-dependent tasks blocked; release not_started, 2026-11-15.
+
+## M02 partial integration - 2026-11-15
+
+The user explicitly requested the GitHub origin, a push of the feature branch and integration of the latest changes into `main`. The target repository reported no refs at preflight. The linked worktree and other checkouts had no uncommitted changes. The native WSL full `go test ./... -count=1 -timeout 120s` passed on the M02 branch. Local `main` fast-forwarded from `924b123` to `3f688b3`; no force operation or branch cleanup was used. Publication status: TODO record actual push result. M02 is still incomplete: T01 fixture access, T04-T05 database producers, T06 orchestration and T07 acceptance remain. The backup engine remains `not_implemented`; no deployment was authorized.
 
 ## M02 local execution - 2026-11-03
 

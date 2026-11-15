@@ -10,7 +10,7 @@
 
 **Spec:** [Approved architecture](../../02-architecture/system-overview.md), [database design](../../02-architecture/database-design.md), [security design](../../02-architecture/security-design.md), [M02 milestone](../milestones.md#m02---online-encrypted-database-archives-p0), [PRD](../../01-requirements/PRD.md).
 
-**Document status:** Execution blocked at Task 1, 2026-11-03; Tasks 2-3 complete on `feature/m02-backup-plan`. The user explicitly requested M02 implementation using `using-git-worktrees` and `executing-plans`, satisfying H2 for this M02 scope and mode. The user confirmed a disposable test server with permission to create temporary database containers and data. Password-free SSH was denied; no remote mutation occurred. A credential shared in chat was not used and must be rotated and replaced with private access outside chat. No credentials, host address or customer data belong in this plan.
+**Document status:** Execution blocked at Task 1; Tasks 2-3 complete and locally integrated into `main` under the user's 2026-11-15 H3 instruction. The user explicitly requested M02 implementation using `using-git-worktrees` and `executing-plans`, satisfying H2 for this M02 scope and mode. The user confirmed a disposable test server with permission to create temporary database containers and data. Password-free SSH was denied; no remote mutation occurred. A credential shared in chat was not used and must be rotated and replaced with private access outside chat. No credentials, host address or customer data belong in this plan.
 
 ## Global constraints and entry gates
 

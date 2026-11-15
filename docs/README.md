@@ -1,6 +1,6 @@
 # Documentation index
 
-**Document status:** Active navigation; M01 locally integrated; M02 T02-T03 locally verified, fixture-dependent tasks blocked.
+**Document status:** Active navigation; M02 partial work locally integrated; T02-T03 verified, fixture-dependent tasks blocked.
 
 ## Purpose
 
@@ -8,7 +8,7 @@ Navigate project documentation and distinguish templates from approved or verifi
 
 ## Status and authority
 
-Latest update, 2026-11-03: M01 is locally integrated into `main`. The user authorized M02 inline execution; encrypted staging and artifact catalog tasks are committed on the isolated feature branch. The database fixture gate is blocked on private access, so backup producers and end-to-end M02 acceptance remain open. Push and deployment remain unapproved. See [current status](05-progress/current-status.md), [M02 local evidence](06-testing/m02-local-evidence.md) and the [M02 task register](03-planning/implementation-plans/2026-11-03-m02-encrypted-local-backups.md#file-map-and-task-register).
+Latest update, 2026-11-15: M01 and the completed M02 staging/catalog tasks are locally integrated into `main` under the user's explicit instruction. The database fixture gate is blocked on private access, so backup producers and end-to-end M02 acceptance remain open. The user authorized publication of the feature branch and `main`; see [current status](05-progress/current-status.md) for the actual push result. Deployment remains unapproved. See [M02 local evidence](06-testing/m02-local-evidence.md) and the [M02 task register](03-planning/implementation-plans/2026-11-03-m02-encrypted-local-backups.md#file-map-and-task-register).
 
 - **Template:** structure exists; substantive information remains TODO.
 - **Draft:** content exists but is not approved.

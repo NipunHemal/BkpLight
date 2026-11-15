@@ -1,6 +1,10 @@
 # Session handoff
 
-**Document status:** M01 locally integrated into `main`; M02 T02-T03 done, T01/T04-T07 blocked on fixture access; release not_started, 2026-11-03.
+**Document status:** M02 partial work locally integrated into `main`; T02-T03 done, T01/T04-T07 blocked on fixture access; release not_started, 2026-11-15.
+
+## M02 partial integration handoff - 2026-11-15
+
+The user authorized GitHub origin publication of the M02 feature branch and local integration of its latest changes into `main`. The remote reported no refs at preflight. The existing M02 worktree was clean, other linked checkouts had no uncommitted changes, and the native WSL full suite passed. Local `main` fast-forwarded from `924b123` to `3f688b3`. Publication status: TODO record actual push result. The M02 fixture gate and T04-T07 remain open; do not describe this integration as M02 completion or enable backup capability before T06 and T07 evidence. The chat-disclosed credential remains unused; rotate it and establish private SSH access outside chat. No production deployment is approved.
 
 ## M02 execution handoff - 2026-11-03
 
